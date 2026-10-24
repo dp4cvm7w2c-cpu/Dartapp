@@ -8,7 +8,7 @@
 :root{--bg:#eef0e9;--card:#fff;--ink:#16201a;--mut:#5d6a61;--line:#d5dacf;--red:#b8322b;--grn:#1d6a43;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1712;--card:#18221b;--ink:#eaf0e6;--mut:#93a398;--line:#2a372e;--red:#e0584f;--grn:#3fae7a;--on:#0f1712;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f1712;--card:#18221b;--ink:#eaf0e6;--mut:#93a398;--line:#2a372e;--red:#e0584f;--grn:#3fae7a;--on:#0f1712;color-scheme:dark}
-*{box-sizing:inherit}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Barlow,system-ui,sans-serif;padding-bottom:80px}
+*{box-sizing:inherit}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Barlow,system-ui,sans-serif;padding-bottom:110px}
 h1,h2,.n{font-family:"Barlow Condensed","Arial Narrow",sans-serif}
 h1{margin:0;font-size:30px;font-weight:800}h2{margin:0 0 8px;font-size:21px;font-weight:600}
 header{padding:14px 16px 0}nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px;padding:8px 16px;z-index:100;justify-content:space-around}nav button{flex:1;min-height:36px;padding:6px 2px;font-size:.8rem}.badge{background:var(--line);padding:2px 8px;border-radius:12px;font-size:.75rem;color:var(--mut)}main{padding:0 16px 32px;max-width:560px;margin:0 auto}header,nav{max-width:560px;margin:0 auto}
@@ -59,7 +59,7 @@ th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);whit
 <script>
 const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
 let S={boards:8,mode:501,legs:2,dout:true,groups:0,players:[]},M=null,TN=null,LV={},PL={},SV='all',BASE={},RS=false,GU=[],gm='',R=['Anna','Ben','Chris','Dana'].map(n=>({n,on:true})),ST={},hist=[],tab='setup',pick=[0,1],msg='';
-const T={pl:'Spieler',setup:'Turnier',plan:'Verlauf',live:'Livesicht',match:'Match',stats:'Statistik'};
+const T={pl:'Spieler',setup:'Turnier',plan:'Verlauf',live:'Livesicht',ts:'Tabelle',match:'Match',stats:'Statistik'};
 const mk=()=>({darts:0,points:0,c180:0,hiF:0,hT:0,att:0,hit:0,won:0,wd:0,mp:0,mw:0,lp:0});
 const avg=n=>{const s=ST[n];return s&&s.darts?(s.points/s.darts*3).toFixed(1):'–'};
 const gcount=n=>S.groups?Math.min(S.groups,Math.max(1,Math.floor(n/2))):(n<=8?1:Math.ceil(n/4));
@@ -198,20 +198,34 @@ function vLive(){
  const L=Object.values(LV).filter(m=>!m.over);
  if(!L.length)return `<div class="card"><h2>Gerade läuft nichts</h2><p>Sobald ein Match gestartet ist, siehst du hier den Live-Stand aller Scheiben.</p></div>`;
  return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2><div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Legs ${m.legs[i]} · Match-Ø ${m.dr[i]?(m.pt[i]/m.dr[i]*3).toFixed(1):'–'}</div></div>`).join('')}</div><p class="mut">${esc(String(m.p[m.turn]??''))} ist dran, Pfeil ${m.vd.length+1} von 3${m.vd.length?': '+m.vd.join(' '):''}</p></div>`).join('')+'<p class="mut">Mit der Datenbank siehst du alle Scheiben später live auf deinem Handy, auch wenn die Matches auf anderen Geräten laufen.</p>'}
+function vTS(){
+ if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Starte im Tab Turnier ein Turnier, dann siehst du hier Tabellen und Statistiken.</p></div>`;
+ const av=n=>tavg(n)?tavg(n).toFixed(1):'–';
+ const th=g=>`<tr><th>#</th><th>Spieler</th>${g?'<th>Gr.</th>':''}<th>Sp</th><th>S</th><th>N</th><th>Legs</th><th>Pkt</th><th>Ø</th></tr>`;
+ const row=(r,i,g)=>`<tr><td>${i+1}</td><td>${esc(r.n)}</td>${g?`<td>${g}</td>`:''}<td>${r.w+r.l}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td><td>${r.p}</td><td>${av(r.n)}</td></tr>`;
+ const gr=TN.G.map(g=>stand(g));
+ const all=gr.flatMap((s,gi)=>s.map((r,pos)=>({...r,gi,pos}))).sort((x,y)=>x.pos-y.pos||y.p-x.p||y.d-x.d||tavg(y.n)-tavg(x.n));
+ const pl=places();
+ return `${pl?`<div class="win">Sieger: ${esc(pl[0])}<br><small>2. ${esc(pl[1])}${pl[2]?', 3. '+esc(pl[2]):''}</small></div>`:''}
+<h2 style="margin:4px 0 8px">Turnierstatistik</h2>
+${gr.map((s,gi)=>`<div class="card sc"><h2>Gruppe ${gi+1}</h2><table>${th(false)}${s.map((r,i)=>row(r,i)).join('')}</table></div>`).join('')}
+${gr.length>1?`<div class="card sc"><h2>Gesamtwertung</h2><table>${th(true)}${all.map((r,i)=>row(r,i,r.gi+1)).join('')}</table><p class="mut">Setzliste fürs KO-Feld: erst Gruppenplatz, dann Punkte, Leg-Differenz und Average.</p></div>`:''}
+<p class="mut">Sp = Spiele, S = Siege, N = Niederlagen, Legs = Leg-Differenz, Pkt = Punkte (2 pro Sieg), Ø = Turnier-Average.</p>
+${vStats0('tn')}`}
 function vStats(){return vPlace()+vStats0()+`<button data-a="rst">${RS?'Wirklich alle Statistiken löschen?':'Statistiken zurücksetzen'}</button>`}
-function vStats0(){
- const tn=SV=='tn'&&TN,B=n=>tn&&BASE[n]?BASE[n]:mk();
+function vStats0(mode){
+ const tn=(mode||SV)=='tn'&&TN,B=n=>tn&&BASE[n]?BASE[n]:mk();
  const get=n=>{const s=ST[n],b=B(n),d=k=>(s[k]||0)-(b[k]||0);return {darts:d('darts'),points:d('points'),c180:d('c180'),att:d('att'),hit:d('hit'),won:d('won'),wd:d('wd'),mp:d('mp'),mw:d('mw'),lp:d('lp'),hiF:tn?(s.hT||0):s.hiF}};
  const av=n=>{const g=get(n);return g.darts?g.points/g.darts:0};
  const names=Object.keys(ST).filter(n=>get(n).darts>0).sort((a,b)=>av(b)-av(a));
- const tabs=TN?`<div class="row"><span class="mut">Zeitraum</span><span>${[['all','Alle Spiele'],['tn','Dieses Turnier']].map(([k,t])=>`<button class="chip ${SV==k?'on':''}" data-a="sv" data-v="${k}">${t}</button>`).join(' ')}</span></div>`:'';
+ const tabs=TN&&!mode?`<div class="row"><span class="mut">Zeitraum</span><span>${[['all','Alle Spiele'],['tn','Dieses Turnier']].map(([k,t])=>`<button class="chip ${SV==k?'on':''}" data-a="sv" data-v="${k}">${t}</button>`).join(' ')}</span></div>`:'';
  if(!names.length)return `${tabs}<div class="card"><h2>Noch keine Statistik</h2><p>Starte ein Match und wirf Pfeile, dann erscheinen hier Average, Doppelquote und mehr.</p></div>`;
  const row=n=>{const g=get(n);return `<tr><td>${esc(n)}</td><td>${(av(n)*3).toFixed(1)}</td><td>${g.darts}</td><td>${g.att?Math.round(g.hit/g.att*100)+' %':'–'}</td><td>${g.c180}</td><td>${g.hiF||'–'}</td><td>${g.won?(g.wd/g.won).toFixed(1):'–'}</td><td>${g.mw}/${g.mp}</td><td>${g.won}/${g.lp}</td></tr>`};
  return `${tabs}<div class="card sc"><h2>${tn?'Dieses Turnier':'Alle Spiele'}</h2><p class="mut">Gespielt: ${Math.round(names.reduce((a,n)=>a+get(n).mp,0)/2)} Matches, ${Math.round(names.reduce((a,n)=>a+get(n).lp,0)/2)} Legs</p><table><tr><th>Spieler</th><th>Ø</th><th>Pfeile</th><th>Doppel</th><th>180</th><th>Finish</th><th>Pf./Leg</th><th>Matches</th><th>Legs</th></tr>${names.map(row).join('')}</table></div><p class="mut">Ø = 3-Dart-Average, sortiert nach Average. Pf./Leg = Pfeile pro gewonnenem Leg. Matches und Legs: gewonnen/gespielt. Die Daten bleiben auf diesem Gerät gespeichert.</p>`}
 function derive(){S.players=[...R.filter(p=>p.on).map(p=>p.n),...GU].slice(0,64);if(M)LV[M.tm==null?'f':M.tm]=M;try{localStorage.setItem('dart-st',JSON.stringify(ST))}catch(e){}}
 function render(){derive();push();
  $('#nav').innerHTML=Object.keys(T).map(k=>`<button class="tab ${tab==k?'on':''}" data-a="tab" data-v="${k}">${T[k]}</button>`).join('');
- $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,match:vMatch,stats:vStats}[tab]()}
+ $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,ts:vTS,match:vMatch,stats:vStats}[tab]()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
  if(a=='tab'){tab=v;msg='';gm='';RS=false}
  else if(a=='b')S.boards=Math.min(8,Math.max(1,S.boards+ +v));
