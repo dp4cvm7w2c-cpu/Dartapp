@@ -77,7 +77,10 @@ function places(){
  const a=f.w,b=f.w==f.a?f.b:f.a;let c=null;
  if(TN.p3)c=TN.p3.w;else{const all=[...new Set(TN.gm.flatMap(m=>[m.a,m.b]))];if(all.length==3)c=all.find(x=>x!=a&&x!=b)}
  return [a,b,c]}
-function recPl(){const p=places();if(!p||TN.rec)return;TN.rec=1;p.forEach((n,i)=>{if(n){PL[n]=PL[n]||[0,0,0];PL[n][i]++}});savePL()}
+function recPl(){const p=places();if(!p||TN.rec||recBusy)return;recBusy=true;
+ const go=()=>{TN.rec=1;LAST&&(LAST.tn.rec=1);p.forEach((n,i)=>{if(n){PL[n]=PL[n]||[0,0,0];PL[n][i]++}});savePL()};
+ if(!ROOM||first||!db){go();recBusy=false;return}
+ ROOM.child('tn/rec').transaction(c=>c?undefined:1,(err,ok)=>{recBusy=false;if(ok){go();render()}})}
 function schema(n){
  if(n<2)return '<p class="mut">Wähle mindestens 2 Spieler.</p>';
  const g=gcount(n),b=Math.floor(n/g),x=n%g;let sz=1;while(sz<n)sz*=2;
@@ -90,7 +93,7 @@ function vPlace(){const e=Object.entries(PL).sort((a,b)=>b[1][0]-a[1][0]||b[1][1
  if(!e.length)return '';
  return `<div class="card sc"><h2>Platzierungen</h2><table><tr><th>Spieler</th><th>1.</th><th>2.</th><th>3.</th></tr>${e.map(([n,v])=>`<tr><td>${esc(n)}</td><td>${v[0]}</td><td>${v[1]}</td><td>${v[2]}</td></tr>`).join('')}</table></div>`}
 const tavg=n=>{const s=ST[n];if(!s)return 0;const b=BASE[n]||mk(),d=s.darts-b.darts;return d?(s.points-b.points)/d*3:0};
-const bd=id=>{const k=pend().slice(0,S.boards).findIndex(t=>t.id==id);return k<0?'?':k+1};
+const bd=id=>{const k=((TN&&TN.sl)||[]).indexOf(id);return k<0?'?':k+1};
 const DN=n=>n==25?'Bull':n,allM=()=>TN?[...TN.gm,...(TN.ko||[]).flat(),...(TN.p3?[TN.p3]:[])]:[],pend=()=>allM().filter(m=>!m.done&&m.a&&m.b);
 function start(p,tm){
  p.forEach(n=>ST[n]=ST[n]||mk());hist=[];
@@ -176,13 +179,13 @@ function vMatch(){
  return `<div class="pls">${pn}</div>${inp}${M.over?'':'<button data-a="undo">Letzten Pfeil zurücknehmen</button>'}<p class="mut">Prototyp: Die Daten liegen nur auf diesem Gerät. Live-Sync auf mehreren Scheiben kommt mit der Datenbank.</p>`}
 function vPlan(){
  if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Lege im Tab Turnier die Spieler fest und starte das Turnier. Hier siehst du dann Scheiben, Spielplan, Tabellen und den KO-Baum.</p></div>`;
- const P=pend(),B=S.boards,fin=TN.ko&&TN.ko[TN.ko.length-1][0];
+ const P=pend(),B=S.boards,AC=Array.from({length:B},(_,i)=>{const id=(TN.sl||[])[i];return id?P.find(x=>x.id==id)||null:null}),WT=P.filter(t=>!AC.includes(t)),fin=TN.ko&&TN.ko[TN.ko.length-1][0];
  const nm=t=>`${t.a?esc(t.a):t.done?'Freilos':'offen'} – ${t.b?esc(t.b):t.done?'Freilos':'offen'}`,res=t=>t.done&&t.a&&t.b?` ${t.la}:${t.lb}`:'';
  const rn=k=>{if(k>=TN.ko.length)return 'Spiel um Platz 3';const c=TN.ko[k].length;return c==1?'Finale':c==2?'Halbfinale':c==4?'Viertelfinale':'Runde '+(k+1)};
  return `${places()?`<div class="win">Sieger: ${esc(places()[0])}<br><small>2. ${esc(places()[1])}${places()[2]?', 3. '+esc(places()[2]):''}</small></div>`:''}
 <div class="card"><h2>${TN.ko?'KO-Phase':'Gruppenphase'}</h2><p class="mut">${allM().filter(t=>t.done&&t.a&&t.b).length} Matches gespielt, ${P.length} bereit</p>
-${P.slice(0,B).map((t,i)=>`<div class="m"><span><b>Scheibe ${i+1}</b> ${nm(t)}${LV[t.id]&&!LV[t.id].over?' <span class="bd">läuft</span>':''}</span><button data-a="play" data-v="${t.id}">${LV[t.id]?'Fortsetzen':'Spielen'}</button></div>`).join('')||'<p>Keine Matches bereit.</p>'}</div>
-${P.length>B?`<div class="card"><h2>Als Nächstes</h2>${P.slice(B,B+8).map(t=>`<div class="m"><span>${nm(t)}</span></div>`).join('')}</div>`:''}
+${AC.map((t,i)=>!t?`<div class="m"><span><b>Scheibe ${i+1}</b> <span class="bd">frei</span></span></div>`:`<div class="m"><span><b>Scheibe ${i+1}</b> ${nm(t)}${LV[t.id]&&!LV[t.id].over?' <span class="bd">läuft</span>':''}</span><button data-a="play" data-v="${t.id}">${LV[t.id]?'Fortsetzen':'Spielen'}</button></div>`).join('')}</div>
+${WT.length?`<div class="card"><h2>Als Nächstes</h2>${WT.slice(0,8).map(t=>`<div class="m"><span>${nm(t)}</span></div>`).join('')}</div>`:''}
 ${TN.ko?`<details class="card" open><summary>KO-Baum</summary>${[...TN.ko,...(TN.p3?[[TN.p3]]:[])].map((R,k)=>`<h2>${rn(k)}</h2>${R.map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`:''}
 <details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
 function vPlayers(){return `<div class="card"><h2>Spieler anlegen</h2><input id="nn" placeholder="Name" maxlength="24" aria-label="Name"><button class="big" data-a="padd">Spieler speichern</button><p class="err">${gm}</p></div>
@@ -215,7 +218,16 @@ function vStats0(mode){
  if(!names.length)return `${tabs}<div class="card"><h2>Noch keine Statistik</h2><p>Starte ein Match und wirf Pfeile, dann erscheinen hier Average, Doppelquote und mehr.</p></div>`;
  const row=n=>{const g=get(n);return `<tr><td>${esc(n)}</td><td>${(av(n)*3).toFixed(1)}</td><td>${g.darts}</td><td>${g.att?Math.round(g.hit/g.att*100)+' %':'–'}</td><td>${g.c180}</td><td>${g.hiF||'–'}</td><td>${g.won?(g.wd/g.won).toFixed(1):'–'}</td><td>${g.mw}/${g.mp}</td><td>${g.won}/${g.lp}</td></tr>`};
  return `${tabs}<div class="card sc"><h2>${tn?'Dieses Turnier':'Alle Spiele'}</h2><p class="mut">Gespielt: ${Math.round(names.reduce((a,n)=>a+get(n).mp,0)/2)} Matches, ${Math.round(names.reduce((a,n)=>a+get(n).lp,0)/2)} Legs</p><table><tr><th>Spieler</th><th>Ø</th><th>Pfeile</th><th>Doppel</th><th>180</th><th>Finish</th><th>Pf./Leg</th><th>Matches</th><th>Legs</th></tr>${names.map(row).join('')}</table></div><p class="mut">Ø = 3-Dart-Average, sortiert nach Average. Pf./Leg = Pfeile pro gewonnenem Leg. Matches und Legs: gewonnen/gespielt. Die Daten bleiben auf diesem Gerät gespeichert.</p>`}
-function derive(){S.players=[...R.filter(p=>p.on).map(p=>p.n),...GU].slice(0,64);if(M)LV[M.tm==null?'f':M.tm]=M;try{localStorage.setItem('dart-st',JSON.stringify(ST))}catch(e){}}
+function assign(){
+ if(!TN)return;
+ const B=S.boards,sl=(TN.sl=arr(TN.sl)),P=pend(),busy=new Set(),used=new Set();
+ sl.length=B;
+ for(let i=0;i<B;i++){const t=sl[i]&&!used.has(sl[i])&&P.find(x=>x.id==sl[i]);
+  if(!t)sl[i]=0;else{used.add(t.id);busy.add(t.a);busy.add(t.b)}}
+ for(let i=0;i<B;i++){if(sl[i])continue;
+  const t=P.find(x=>!used.has(x.id)&&!busy.has(x.a)&&!busy.has(x.b));
+  sl[i]=t?t.id:0;if(t){used.add(t.id);busy.add(t.a);busy.add(t.b)}}}
+function derive(){assign();S.players=[...R.filter(p=>p.on).map(p=>p.n),...GU].slice(0,64);if(M)LV[M.tm==null?'f':M.tm]=M;try{localStorage.setItem('dart-st',JSON.stringify(ST))}catch(e){}}
 function render(){derive();push();
  $('#nav').innerHTML=Object.keys(T).map(k=>`<button class="tab ${tab==k?'on':''}" data-a="tab" data-v="${k}">${T[k]}</button>`).join('');
  $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,ts:vTS,match:vMatch,stats:vStats}[tab]()}
@@ -262,14 +274,16 @@ function flat(o,p,out){out=out||{};if(o!==null&&o!==undefined&&typeof o=='object
 const cfgObj=()=>({S:{boards:S.boards,mode:S.mode,legs:S.legs,dout:S.dout,groups:S.groups},R:R.map(p=>({n:p.n,on:!!p.on})),GU});
 const fixM=m=>({...m,p:arr(m.p),rem:arr(m.rem),legs:arr(m.legs),last:arr(m.last),ld:arr(m.ld),dr:arr(m.dr),pt:arr(m.pt),vd:arr(m.vd),tm:m.tm==null?null:m.tm,over:!!m.over,vp:m.vp||0,mod:m.mod||'S'});
 function fixTN(t){const m=x=>({...x,la:x.la||0,lb:x.lb||0,done:!!x.done});
- const r={G:arr(t.G).map(arr),gm:arr(t.gm).map(m),ko:t.ko?arr(t.ko).map(R=>arr(R).map(m)):null,p3:t.p3?m(t.p3):null};if(t.rec)r.rec=t.rec;return r}
-let ROOM=null,LAST,WROTE=new Set(),first=true,online=false,ERR='';
+ const r={G:arr(t.G).map(arr),gm:arr(t.gm).map(m),ko:t.ko?arr(t.ko).map(R=>arr(R).map(m)):null,p3:t.p3?m(t.p3):null};if(t.rec)r.rec=t.rec;if(t.sl)r.sl=arr(t.sl);return r}
+let ROOM=null,LAST,WROTE=new Set(),first=true,online=false,ERR='',recBusy=false,joined=null;
 const fresh=()=>({tn:{},st:{},pl:{},cfg:'',base:'',live:{}});
 const badge=t=>{const b=$('#room-badge');if(b)b.textContent=t};
 const showBadge=()=>{badge(ERR||(online?'Raum: '+turnierCode+' ✓':'offline'));const r=document.getElementById('rstat');if(r)r.textContent=ERR||(online?'Verbunden mit '+turnierCode:'Nicht verbunden')};
 if(db)db.ref('.info/connected').on('value',s=>{online=!!s.val();showBadge()});
 function connect(){
  if(!db){badge('Lokal (ohne Sync)');return}
+ if(joined&&joined!==turnierCode){TN=null;ST={};PL={};BASE={};LV={};M=null;hist=[];R=[];GU=[];savePL();save()}
+ joined=turnierCode;
  if(ROOM)ROOM.off();
  first=true;LAST=fresh();WROTE=new Set();ERR='';badge('Raum: '+turnierCode+' …');
  ROOM=db.ref('rooms/'+turnierCode);
@@ -278,7 +292,7 @@ function onRoom(snap){
  try{
   ERR='';showBadge();
   if(first){first=false;if(!snap.exists()){LAST=fresh();push();return}}
-  apply(snap.val()||{});softRender()
+  apply(snap.val()||{});push();softRender()
  }catch(e){ERR='Fehler: '+e.message;showBadge();console.error(e)}}
 function apply(v){
  if(v.cfg){if(v.cfg.S)Object.assign(S,v.cfg.S);R=arr(v.cfg.R).map(p=>({n:p.n,on:!!p.on}));GU=arr(v.cfg.GU);LAST.cfg=JSON.stringify(cfgObj())}
@@ -288,7 +302,8 @@ function apply(v){
  if(v.base){BASE={};for(const k in v.base)BASE[decK(k)]=Object.assign(mk(),v.base[k]);LAST.base=JSON.stringify(BASE)}
  const lv=v.live||{},mine=M&&M.tm!=null?String(M.tm):null;
  LV={};for(const k in lv)if(k!==mine&&lv[k]&&arr(lv[k].p).length==2)LV[k]=fixM(lv[k]);
- if(M)LV[M.tm==null?'f':M.tm]=M}
+ if(M)LV[M.tm==null?'f':M.tm]=M;
+ if(TN){phase();recPl()}}
 function softRender(){
  if(tab=='match')return;
  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
