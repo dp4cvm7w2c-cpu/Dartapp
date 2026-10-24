@@ -80,7 +80,7 @@ const db = firebase.database();
 
 let turnierCode = localStorage.getItem('dart-code') || 'abend-' + Math.floor(Math.random() * 9000 + 1000);
 
-let S={boards:8,mode:501,legs:2,dout:true,groups:0,players:[]},M=null,TN=null,LV={},PL={},SV='all',BASE={},RS=false,GU=[],gm='',R=['Anna','Ben','Chris','Dana'].map(n=>({n,on:true})),ST={},hist=[],tab='setup',pick=[0,1],msg='';
+let S={boards:8,mode:501,legs:2,dout:true,groups:0,players:[]},M=null,TN=null,lastTN=null,LV={},PL={},SV='all',BASE={},RS=false,GU=[],gm='',R=['Anna','Ben','Chris','Dana'].map(n=>({n,on:true})),ST={},hist=[],tab='setup',pick=[0,1],msg='';
 const T={pl:'Spieler',setup:'Turnier',plan:'Verlauf',live:'Livesicht',match:'Match',stats:'Statistik'};
 const mk=()=>({darts:0,points:0,c180:0,hiF:0,hT:0,att:0,hit:0,won:0,wd:0,mp:0,mw:0,lp:0});
 const avg=n=>{const s=ST[n];return s&&s.darts?(s.points/s.darts*3).toFixed(1):'–'};
@@ -191,37 +191,4 @@ function vSetup(){return `<div class="card"><h2>Turnier einrichten</h2>
 <button data-a="all" style="margin-top:8px">Alle an oder aus</button></div>
 <div class="card"><h2>Gäste</h2>${GU.map((g,i)=>`<div class="m"><span>${esc(g)} <span class="bd">Gast</span></span><button data-a="gdel" data-v="${i}">Entfernen</button></div>`).join('')}
 <input id="gn" placeholder="Name des Gasts" maxlength="24" aria-label="Name des Gasts"><button data-a="gadd">Gast hinzufügen</button><p class="err">${gm}</p><p class="mut">Höchstens 64 Spieler.</p></div>
-<div class="card"><h2>Turnierplan</h2><p id="plan">${plan(S.players.length,S.boards)}</p></div>
-<div class="card"><h2>Turnierbaum</h2>${schema(S.players.length)}</div>
-<p class="err">${msg}</p><button class="big" data-a="tstart">Turnier starten</button>`}
-function vMatch(){
- if(!M){const o=i=>`<select data-i="${i}" aria-label="Spieler ${i+1}">${S.players.map((p,k)=>`<option value="${k}" ${pick[i]==k?'selected':''}>${esc(p)}</option>`).join('')}</select>`;
-  return `<div class="card"><h2>Freies Match</h2><p class="mut">Turnierspiele startest du im Tab Verlauf mit „Spielen“.</p>${o(0)}${o(1)}<p class="err">${msg}</p><button class="big" data-a="go">Match starten</button></div>`}
- const pn=M.p.map((n,i)=>`<div class="pl ${M.turn==i&&!M.over?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${M.rem[i]}</div><div class="mut">Legs ${M.legs[i]} · Match-Ø ${M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–'}<br>zuletzt${M.last[i]}</div></div>`).join('');
- let inp;
- if(M.over){const w=M.legs[0]>M.legs[1]?0:1,t=M.tm!=null;inp=`<div class="win">${esc(M.p[w])} gewinnt ${M.legs[0]}:${M.legs[1]}</div><button class="big" data-a="${t?'back':'new'}">${t?'Zurück zum Verlauf':'Neues Match'}</button>`}
- else inp=`<div class="card"><div class="mut">${esc(M.p[M.turn])} wirft Pfeil${M.vd.length+1} von 3</div><div class="n vis">${M.vd.join('   ')||'–'}</div>
-<div class="mods">${[['S','Single'],['D','Doppel'],['T','Triple']].map(([k,t])=>`<button class="chip ${M.mod==k?'on':''}" data-a="mod" data-v="${k}">${t}</button>`).join('')}<button data-a="miss">Miss</button></div>
-<div class="pad5">${Array.from({length:20},(_,k)=>k+1).concat(25).map(n=>`<button data-a="d" data-v="${n}" ${n==25&&M.mod=='T'?'disabled':''}>${M.mod=='S'?'':M.mod}${DN(n)}</button>`).join('')}</div></div>`;
- return `<div class="pls">${pn}</div>${inp}${M.over?'':'<button data-a="undo">Letzten Pfeil zurücknehmen</button>'}`}
-function vPlan(){
- if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Lege im Tab Turnier die Spieler fest und starte das Turnier. Hier siehst du dann Scheiben, Spielplan, Tabellen und den KO-Baum.</p></div>`;
- const P=pend(),B=S.boards,fin=TN.ko&&TN.ko[TN.ko.length-1][0];
- const nm=t=>`${t.a?esc(t.a):t.done?'Freilos':'offen'} – ${t.b?esc(t.b):t.done?'Freilos':'offen'}`,res=t=>t.done&&t.a&&t.b?` ${t.la}:${t.lb}`:''; const rn=k=>{if(k>=TN.ko.length)return 'Spiel um Platz 3';const c=TN.ko[k].length;return c==1?'Finale':c==2?'Halbfinale':c==4?'Viertelfinale':'Runde '+(k+1)}; return `${places()?`<div class="win">Sieger: ${esc(places()[0])}<br><small>2. ${esc(places()[1])}${places()[2]?', 3. '+esc(places()[2]):''}</small></div>`:''}
-<div class="card"><h2>${TN.ko?'KO-Phase':'Gruppenphase'}</h2><p class="mut">${allM().filter(t=>t.done&&t.a&&t.b).length} Matches gespielt, ${P.length} bereit</p>${P.slice(0,B).map((t,i)=>`<div class="m"><span><b>Scheibe ${i+1}</b> ${nm(t)}${LV[t.id]&&!LV[t.id].over?' <span class="bd">läuft</span>':''}</span><button data-a="play" data-v="${t.id}">${LV[t.id]?'Fortsetzen':'Spielen'}</button></div>`).join('')||'<p>Keine Matches bereit.</p>'}</div>
-${P.length>B?`<div class="card"><h2>Als Nächstes</h2>${P.slice(B,B+8).map(t=>`<div class="m"><span>${nm(t)}</span></div>`).join('')}</div>`:''}
-${TN.ko?`<details class="card" open><summary>KO-Baum</summary>${[...TN.ko,...(TN.p3?[[TN.p3]]:[])].map((R,k)=>`<h2>${rn(k)}</h2>${R.map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`:''}
-<details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
-function vPlayers(){return `<div class="card"><h2>Spieler anlegen</h2><input id="nn" placeholder="Name" maxlength="24" aria-label="Name"><button class="big" data-a="padd">Spieler speichern</button><p class="err">${gm}</p></div>
-<div class="card"><h2>Alle Spieler (${R.length})</h2>${R.map((p,i)=>`<div class="m"><span>${esc(p.n)}</span><button data-a="pdel" data-v="${i}">Entfernen</button></div>`).join('')||'<p class="mut">Noch keine Spieler.</p>'}<p class="mut">Wer beim Turnier mitspielt, wählst du im Tab Turnier.</p></div>`}
-function vLive(){
- const L=Object.values(LV).filter(m=>!m.over);
- if(!L.length)return `<div class="card"><h2>Gerade läuft nichts</h2><p>Sobald ein Match gestartet ist, siehst du hier den Live-Stand aller Scheiben.</p></div>`;
- return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2><div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Legs ${m.legs[i]} · Match-Ø ${m.dr[i]?(m.pt[i]/m.dr[i]*3).toFixed(1):'–'}</div></div>`).join('')}</div><p class="mut">${esc(m.p[m.turn])} ist dran, Pfeil ${m.vd.length+1} von 3${m.vd.length?': '+m.vd.join(' '):''}</p></div>`).join('');}
-function vStats(){return vPlace()+vStats0()+`<button data-a="rst">${RS?'Wirklich alle Statistiken löschen?':'Statistiken zurücksetzen'}</button>`}
-function vStats0(){
- const tn=SV=='tn'&&TN,B=n=>tn&&BASE[n]?BASE[n]:mk();
- const get=n=>{const s=ST[n],b=B(n),d=k=>(s[k]||0)-(b[k]||0);return {darts:d('darts'),points:d('points'),c180:d('c180'),att:d('att'),hit:d('hit'),won:d('won'),wd:d('wd'),mp:d('mp'),mw:d('mw'),lp:d('lp'),hiF:tn?(s.hT||0):s.hiF}};
- const av=n=>{const g=get(n);return g.darts?g.points/g.darts:0};
- const names=Object.keys(ST).filter(n=>get(n).darts>0).sort((a,b)=>av(b)-av(a));
- const tabs=TN?`<div class="row"><span class="mut">Zeitraum</span><span>${[['all','Alle Spiele'],['tn','Dieses Turnier']].map(([k,t])=>`<button class="chip ${SV==k?'on':''}" data-a="sv" data-v="${k}">${t}</button>`).join(' ')}</span></div>
+<div class="
