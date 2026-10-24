@@ -214,10 +214,126 @@ function vPlan(){
 <div class="card"><h2>${TN.ko?'KO-Phase':'Gruppenphase'}</h2><p class="mut">${allM().filter(t=>t.done&&t.a&&t.b).length} Matches gespielt, ${P.length} bereit</p>
 ${P.slice(0,B).map((t,i)=>`<div class="m"><span><b>Scheibe ${i+1}</b> ${nm(t)}${LV[t.id]&&!LV[t.id].over?' <span class="bd">läuft</span>':''}</span><button data-a="play" data-v="${t.id}">${LV[t.id]?'Fortsetzen':'Spielen'}</button></div>`).join('')||'<p>Keine Matches bereit.</p>'}</div>
 ${P.length>B?`<div class="card"><h2>Als Nächstes</h2>${P.slice(B,B+8).map(t=>`<div class="m"><span>${nm(t)}</span></div>`).join('')}</div>`:''}
-${TN.ko?`<details class="card" open><summary>KO-Baum</summary>${[...TN.ko,...(TN.p3?[[TN.p3]]:[])].map((R,k)=>`<h2>${rn(k)}</h2>${R.map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`:''} <details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
+${TN.ko?`<details class="card" open><summary>KO-Baum</summary>${[...TN.ko,...(TN.p3?[[TN.p3]]:[])].map((R,k)=>`<h2>${rn(k)}</h2>${R.map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`:''}
+<details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
 function vPlayers(){return `<div class="card"><h2>Spieler anlegen</h2><input id="nn" placeholder="Name" maxlength="24" aria-label="Name"><button class="big" data-a="padd">Spieler speichern</button><p class="err">${gm}</p></div>
 <div class="card"><h2>Alle Spieler (${R.length})</h2>${R.map((p,i)=>`<div class="m"><span>${esc(p.n)}</span><button data-a="pdel" data-v="${i}">Entfernen</button></div>`).join('')||'<p class="mut">Noch keine Spieler.</p>'}<p class="mut">Wer beim Turnier mitspielt, wählst du im Tab Turnier.</p></div>`}
 function vLive(){
  const L=Object.values(LV).filter(m=>!m.over);
  if(!L.length)return `<div class="card"><h2>Gerade läuft nichts</h2><p>Sobald ein Match gestartet ist, siehst du hier den Live-Stand aller Scheiben.</p></div>`;
- return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2><div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Legs ${m.legs[i]} · Match-Ø ${m.dr[i]?(m.
+ return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2><div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Legs ${m.legs[i]} · Match-Ø ${m.dr[i]?(m.pt[i]/m.dr[i]*3).toFixed(1):'–'}</div></div>`).join('')}</div><p class="mut">${esc(m.p[m.turn])} ist dran, Pfeil ${m.vd.length+1} von 3${m.vd.length?': '+m.vd.join(' '):''}</p></div>`).join('');}
+function vStats(){return vPlace()+vStats0()+`<button data-a="rst">${RS?'Wirklich alle Statistiken löschen?':'Statistiken zurücksetzen'}</button>`}
+function vStats0(){
+ const tn=SV=='tn'&&TN,B=n=>tn&&BASE[n]?BASE[n]:mk();
+ const get=n=>{const s=ST[n],b=B(n),d=k=>(s[k]||0)-(b[k]||0);return {darts:d('darts'),points:d('points'),c180:d('c180'),att:d('att'),hit:d('hit'),won:d('won'),wd:d('wd'),mp:d('mp'),mw:d('mw'),lp:d('lp'),hiF:tn?(s.hT||0):s.hiF}};
+ const av=n=>{const g=get(n);return g.darts?g.points/g.darts:0};
+ const names=Object.keys(ST).filter(n=>get(n).darts>0).sort((a,b)=>av(b)-av(a));
+ const tabs=TN?`<div class="row"><span class="mut">Zeitraum</span><span>${[['all','Alle Spiele'],['tn','Dieses Turnier']].map(([k,t])=>`<button class="chip ${SV==k?'on':''}" data-a="sv" data-v="${k}">${t}</button>`).join(' ')}</span></div>`:'';
+ if(!names.length)return `${tabs}<div class="card"><h2>Noch keine Statistik</h2><p>Starte ein Match und wirf Pfeile, dann erscheinen hier Average, Doppelquote und mehr.</p></div>`;
+ const row=n=>{const g=get(n);return `<tr><td>${esc(n)}</td><td>${(av(n)*3).toFixed(1)}</td><td>${g.darts}</td><td>${g.att?Math.round(g.hit/g.att*100)+' %':'–'}</td><td>${g.c180}</td><td>${g.hiF||'–'}</td><td>${g.won?(g.wd/g.won).toFixed(1):'–'}</td><td>${g.mw}/${g.mp}</td><td>${g.won}/${g.lp}</td></tr>`};
+ return `${tabs}<div class="card sc"><h2>${tn?'Dieses Turnier':'Alle Spiele'}</h2><p class="mut">Gespielt: ${Math.round(names.reduce((a,n)=>a+get(n).mp,0)/2)} Matches, ${Math.round(names.reduce((a,n)=>a+get(n).lp,0)/2)} Legs</p><table><tr><th>Spieler</th><th>Ø</th><th>Pfeile</th><th>Doppel</th><th>180</th><th>Finish</th><th>Pf./Leg</th><th>Matches</th><th>Legs</th></tr>${names.map(row).join('')}</table></div><p class="mut">Ø = 3-Dart-Average, sortiert nach Average. Pf./Leg = Pfeile pro gewonnenem Leg. Matches und Legs: gewonnen/gespielt.</p>`}
+
+function sync(){
+  S.players=[...R.filter(p=>p.on).map(p=>p.n),...GU].slice(0,64);
+  if(M) LV[M.tm==null?'f':M.tm]=M;
+  try{
+    localStorage.setItem('dart-r',JSON.stringify(R));
+    localStorage.setItem('dart-st',JSON.stringify(ST));
+    localStorage.setItem('dart-pl',JSON.stringify(PL));
+    localStorage.setItem('dart-code',turnierCode);
+  }catch(e){}
+  db.ref('turniere/' + turnierCode).set({S, TN, lastTN: {}, PL, ST, LV, M});
+}
+
+let activeRef = null;
+function listenToFirebase() {
+  if (activeRef) activeRef.off('value');
+  activeRef = db.ref('turniere/' + turnierCode);
+  activeRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if(data) {
+      S = data.S || S;
+      TN = data.TN || TN;
+      PL = data.PL || PL;
+      ST = data.ST || ST;
+      LV = data.LV || LV;
+      M = data.M || M;
+      
+      // Verhindert, dass aktive Eingaben während des Tippens gelöscht werden
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag !== 'INPUT' && activeTag !== 'SELECT' && activeTag !== 'TEXTAREA') {
+        render();
+      }
+    }
+  });
+}
+
+// Automatisch neu verbinden, wenn der Tab wieder aktiv wird
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    db.ref('turniere/' + turnierCode).once('value', (snap) => {
+      if(snap.exists()) {
+        const data = snap.val();
+        S = data.S || S; TN = data.TN || TN; PL = data.PL || PL; ST = data.ST || ST; LV = data.LV || LV; M = data.M || M;
+        render();
+      }
+    });
+  }
+});
+
+function render(){
+  if($('#room-badge')) $('#room-badge.badge').innerText = 'Raum: ' + turnierCode;
+  if($('#tcode') && document.activeElement !== $('#tcode')) $('#tcode').value = turnierCode;
+  
+  $('#nav').innerHTML=Object.keys(T).map(k=>`<button class="tab ${tab==k?'on':''}" data-a="tab" data-v="${k}">${T[k]}</button>`).join('');
+  $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,match:vMatch,stats:vStats}[tab]();
+}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+ if(a=='tab'){tab=v;msg='';gm='';RS=false}
+ else if(a=='b')S.boards=Math.min(8,Math.max(1,S.boards+ +v));
+ else if(a=='lg')S.legs=Math.min(5,Math.max(1,S.legs+ +v));
+ else if(a=='gr')S.groups=Math.min(Math.max(1,Math.floor(S.players.length/2)),Math.max(0,S.groups+ +v));
+ else if(a=='mode')S.mode=+v;
+ else if(a=='dout')S.dout=v=='true';
+ else if(a=='padd')addName($('#nn').value,0);
+ else if(a=='gadd')addName($('#gn').value,1);
+ else if(a=='pdel'){R.splice(+v,1);save();sync()}
+ else if(a=='gdel'){GU.splice(+v,1);sync()}
+ else if(a=='all'){const f=!R.every(p=>p.on);R.forEach(p=>p.on=f);save();sync()}
+ else if(a=='go'){if(S.players.length<2||pick[0]==pick[1]||pick.some(i=>i>=S.players.length))msg='Bitte zwei verschiedene Spieler wählen.';else{msg='';start(pick.map(i=>S.players[i]))}}
+ else if(a=='tstart')startTN();
+ else if(a=='play'){const t=allM().find(x=>x.id==v);if(LV[v]&&!LV[v].over){M=LV[v];hist=[]}else start([t.a,t.b],t.id);tab='match';sync()}
+ else if(a=='mod')M.mod=v;
+ else if(a=='d'){dart(+v,M.mod);M.mod='S'}
+ else if(a=='miss'){dart(0,'M');M.mod='S'}
+ else if(a=='undo'){if(hist.length){const s=JSON.parse(hist.pop());M=s.M;ST=s.ST;TN=s.TN;PL=s.PL;savePL();sync()}}
+ else if(a=='new'){delete LV.f;M=null;sync()}
+ else if(a=='sv')SV=v;
+ else if(a=='rst'){if(RS){ST={};PL={};BASE={};savePL();if(M)M.p.forEach(n=>ST[n]=mk());RS=false;sync()}else RS=true}
+ else if(a=='back'){delete LV[M.tm];M=null;tab='plan';sync()}
+ else if(a=='changecode'){
+   const val = $('#tcode').value.trim();
+   if(val) {
+     turnierCode = val;
+     localStorage.setItem('dart-code', turnierCode);
+     db.ref('turniere/' + turnierCode).once('value', (snap) => {
+       if(snap.exists()) {
+         const data = snap.val();
+         S = data.S || S; TN = data.TN || TN; PL = data.PL || PL; ST = data.ST || ST; LV = data.LV || LV; M = data.M || M;
+       } else {
+         sync();
+       }
+       listenToFirebase();
+       render();
+     });
+   }
+ }
+ render()});
+
+document.addEventListener('change',e=>{const d=e.target.dataset;if(d.i!=null)pick[+d.i]=+e.target.value;if(d.c!=null){R[+d.c].on=e.target.checked;save();sync();render()}});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&(e.target.id=='nn'||e.target.id=='gn')){e.preventDefault();$('[data-a='+(e.target.id=='nn'?'padd':'gadd')+']').click()}if(e.key=='Enter'&&e.target.id=='tcode'){e.preventDefault();$('[data-a=changecode]').click()}});
+
+listenToFirebase();
+render();
+</script></body></html>
