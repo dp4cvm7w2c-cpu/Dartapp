@@ -18,6 +18,7 @@
 body{background:var(--bg);color:var(--text);padding:10px;padding-bottom:80px;max-width:800px;margin:0 auto;}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--card-border);}
 h1{font-size:1.2rem;color:var(--grn);}
+.badge{background:var(--card-border);padding:2px 8px;border-radius:12px;font-size:0.75rem;color:var(--mut);}
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:12px;margin-bottom:12px;}
 h2{font-size:1rem;margin-bottom:8px;color:var(--blu);}
 p, .mut{font-size:0.85rem;color:var(--mut);line-height:1.3;}
@@ -36,20 +37,20 @@ nav button.active{color:var(--grn);font-weight:bold;}
 <body>
 
 <header>
-  <h1>🎯 Dart Turnier Manager</h1>
+  <h1>🎯 Dart Turnier</h1>
+  <span id="room-badge" class="badge">Raum: wird geladen...</span>
 </header>
 
 <!-- IMMER SICHTBAR: Raum-Auswahl ganz oben -->
 <div class="card" style="border-color: var(--grn); margin-bottom:10px;">
-  <h2 style="font-size:0.9rem; margin-bottom:4px;">🛜 Aktiver Turnier-Code / Raum</h2>
+  <h2 style="font-size:0.9rem; margin-bottom:4px;">🛜 Turnier-Code / Raum</h2>
   <p class="mut" style="margin-bottom:6px;">Geräte mit demselben Code sind live verbunden.</p>
   <div style="display:flex; gap:8px;">
     <input id="tcode" maxlength="20" style="margin-top:0;">
-    <button onclick="changeCode()" style="margin-top:0; width:140px;">Raum wechseln</button>
+    <button onclick="changeCode()" style="margin-top:0; width:140px;">Verbinden</button>
   </div>
 </div>
 
-<div id="msg-box"></div>
 <div id="app"></div>
 
 <nav>
@@ -60,7 +61,7 @@ nav button.active{color:var(--grn);font-weight:bold;}
 </nav>
 
 <script>
-const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+const $=s=>document.querySelector(s),esc=s=>(s||'').replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
 
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
@@ -73,7 +74,10 @@ const firebaseConfig = {
   appId: "1:341118542776:web:ef0c521f0594d1490d654d",
   measurementId: "G-LJ6RE5SGNF"
 };
-firebase.initializeApp(firebaseConfig);
+
+try {
+  firebase.initializeApp(firebaseConfig);
+} catch(e) {}
 const db = firebase.database();
 
 let turnierCode = localStorage.getItem('dart-code') || 'abend-' + Math.floor(Math.random() * 9000 + 1000);
@@ -132,8 +136,12 @@ function listenToFirebase() {
 }
 
 function render() {
-  $('#tcode').value = turnierCode;
-  ['setup', 'active', 'last', 'stats'].forEach(t => $('#n-' + t).className = tab === t ? 'active' : '');
+  if($('#room-badge')) $('#room-badge').innerText = 'Raum: ' + turnierCode;
+  if($('#tcode') && document.activeElement !== $('#tcode')) $('#tcode').value = turnierCode;
+  
+  ['setup', 'active', 'last', 'stats'].forEach(t => {
+    if($('#n-' + t)) $('#n-' + t).className = tab === t ? 'active' : '';
+  });
   
   let html = '';
   if (msg) html += `<div class="msg">${msg}</div>`;
@@ -237,6 +245,7 @@ function changeCode() {
 
 function addPlayer() {
   const nameInput = $('#new-player-name');
+  if(!nameInput) return;
   const name = nameInput.value.trim();
   if (name) {
     R.push({ n: name, on: true });
@@ -294,8 +303,11 @@ function endTurnier() {
   render();
 }
 
-listenToFirebase();
-render();
+window.onload = function() {
+  listenToFirebase();
+  render();
+};
 </script>
 </body>
 </html>
+
