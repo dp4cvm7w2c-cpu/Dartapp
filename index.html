@@ -45,21 +45,11 @@ th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);whit
   <h1>Dart-Abend</h1>
   <span id="room-badge" class="badge">Raum: lädt...</span>
 </header>
-<main style="padding-bottom:10px;padding-top:10px;">
-<div class="card" style="border-color:var(--grn);margin-bottom:10px;">
-  <h2 style="font-size:1rem;margin-bottom:4px;">🛜 Turnier-Code / Raum</h2>
-  <p class="mut" style="margin-bottom:6px;font-size:13px;">Geräte mit demselben Code sind live synchronisiert.</p>
-  <div style="display:flex;gap:8px;">
-    <input id="tcode" maxlength="20" aria-label="Raum-Code" style="margin-bottom:0;">
-    <button data-a="changecode" style="margin-bottom:0;width:130px;min-height:40px;">Verbinden</button>
-  </div>
-</div>
-</main>
 <nav id="nav"></nav><main id="v"></main>
 <script>
 const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
 let S={boards:8,mode:501,legs:2,dout:true,groups:0,players:[]},M=null,TN=null,LV={},PL={},SV='all',BASE={},RS=false,GU=[],gm='',R=['Anna','Ben','Chris','Dana'].map(n=>({n,on:true})),ST={},hist=[],tab='setup',pick=[0,1],msg='';
-const T={pl:'Spieler',setup:'Turnier',plan:'Verlauf',live:'Livesicht',ts:'Tabelle',match:'Match',stats:'Statistik'};
+const T={pl:'Spieler',setup:'Turnier',plan:'Aktuelles Turnier',live:'Livesicht',ts:'Tabelle',match:'Match',stats:'Statistik'};
 const mk=()=>({darts:0,points:0,c180:0,hiF:0,hT:0,att:0,hit:0,won:0,wd:0,mp:0,mw:0,lp:0});
 const avg=n=>{const s=ST[n];return s&&s.darts?(s.points/s.darts*3).toFixed(1):'–'};
 const gcount=n=>S.groups?Math.min(S.groups,Math.max(1,Math.floor(n/2))):(n<=8?1:Math.ceil(n/4));
@@ -157,7 +147,10 @@ function phase(){
  for(let r=1,m=sz/4;m>=1;m/=2,r++)K.push(Array.from({length:m},(_,k)=>({id:'k'+r+'_'+k,ko:1,a:null,b:null,la:0,lb:0,done:false})));
  TN.ko=K;TN.p3=n>=4?{id:'p3',third:1,a:null,b:null,la:0,lb:0,done:false}:null;K[0].forEach(t=>{if(!t.a||!t.b){t.done=true;t.w=t.a||t.b;advance(t)}})}
 const stp=(a,v)=>`<span class="st"><button data-a="${a}" data-v="-1" aria-label="weniger">−</button><b>${v}</b><button data-a="${a}" data-v="1" aria-label="mehr">+</button></span>`;
-function vSetup(){return `<div class="card"><h2>Turnier einrichten</h2>
+function vSetup(){return `<div class="card" style="border-color:var(--grn)"><h2>🛜 Raum / Turnier-Code</h2><p class="mut">Geräte mit demselben Code sind live synchronisiert.</p>
+<div style="display:flex;gap:8px"><input id="tcode" maxlength="20" value="${esc(turnierCode)}" aria-label="Raum-Code" style="margin-bottom:0"><button data-a="changecode" style="width:130px;margin-bottom:0">Verbinden</button></div>
+<p class="mut" id="rstat">${ERR||(online?'Verbunden mit '+esc(turnierCode):'Nicht verbunden')}</p></div>
+<div class="card"><h2>Turnier einrichten</h2>
 <div class="row"><span>Scheiben (max. 8)</span>${stp('b',S.boards)}</div>
 <div class="row"><span>Spiel</span><span>${[301,501].map(m=>`<button class="chip ${S.mode==m?'on':''}" data-a="mode" data-v="${m}">${m}</button>`).join(' ')}</span></div>
 <div class="row"><span>Legs zum Matchsieg</span>${stp('lg',S.legs)}</div>
@@ -173,10 +166,10 @@ ${R.map((p,i)=>`<label class="m"><span>${esc(p.n)}</span><input type="checkbox" 
 <p class="err">${msg}</p><button class="big" data-a="tstart">Turnier starten</button>`}
 function vMatch(){
  if(!M){const o=i=>`<select data-i="${i}" aria-label="Spieler ${i+1}">${S.players.map((p,k)=>`<option value="${k}" ${pick[i]==k?'selected':''}>${esc(p)}</option>`).join('')}</select>`;
-  return `<div class="card"><h2>Freies Match</h2><p class="mut">Turnierspiele startest du im Tab Verlauf mit „Spielen“.</p>${o(0)}${o(1)}<p class="err">${msg}</p><button class="big" data-a="go">Match starten</button></div>`}
+  return `<div class="card"><h2>Freies Match</h2><p class="mut">Turnierspiele startest du im Tab Aktuelles Turnier mit „Spielen“.</p>${o(0)}${o(1)}<p class="err">${msg}</p><button class="big" data-a="go">Match starten</button></div>`}
  const pn=M.p.map((n,i)=>`<div class="pl ${M.turn==i&&!M.over?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${M.rem[i]}</div><div class="mut">Legs ${M.legs[i]} · Match-Ø ${M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–'}<br>zuletzt ${M.last[i]}</div></div>`).join('');
  let inp;
- if(M.over){const w=M.legs[0]>M.legs[1]?0:1,t=M.tm!=null;inp=`<div class="win">${esc(M.p[w])} gewinnt ${M.legs[0]}:${M.legs[1]}</div><button class="big" data-a="${t?'back':'new'}">${t?'Zurück zum Verlauf':'Neues Match'}</button>`}
+ if(M.over){const w=M.legs[0]>M.legs[1]?0:1,t=M.tm!=null;inp=`<div class="win">${esc(M.p[w])} gewinnt ${M.legs[0]}:${M.legs[1]}</div><button class="big" data-a="${t?'back':'new'}">${t?'Zurück zum aktuellen Turnier':'Neues Match'}</button>`}
  else inp=`<div class="card"><div class="mut">${esc(M.p[M.turn])} wirft Pfeil ${M.vd.length+1} von 3</div><div class="n vis">${M.vd.join('   ')||'–'}</div>
 <div class="mods">${[['S','Single'],['D','Doppel'],['T','Triple']].map(([k,t])=>`<button class="chip ${M.mod==k?'on':''}" data-a="mod" data-v="${k}">${t}</button>`).join('')}<button data-a="miss">Miss</button></div>
 <div class="pad5">${Array.from({length:20},(_,k)=>k+1).concat(25).map(n=>`<button data-a="d" data-v="${n}" ${n==25&&M.mod=='T'?'disabled':''}>${M.mod=='S'?'':M.mod}${DN(n)}</button>`).join('')}</div></div>`;
@@ -273,7 +266,7 @@ function fixTN(t){const m=x=>({...x,la:x.la||0,lb:x.lb||0,done:!!x.done});
 let ROOM=null,LAST,WROTE=new Set(),first=true,online=false,ERR='';
 const fresh=()=>({tn:{},st:{},pl:{},cfg:'',base:'',live:{}});
 const badge=t=>{const b=$('#room-badge');if(b)b.textContent=t};
-const showBadge=()=>badge(ERR||(online?'Raum: '+turnierCode+' ✓':'offline'));
+const showBadge=()=>{badge(ERR||(online?'Raum: '+turnierCode+' ✓':'offline'));const r=document.getElementById('rstat');if(r)r.textContent=ERR||(online?'Verbunden mit '+turnierCode:'Nicht verbunden')};
 if(db)db.ref('.info/connected').on('value',s=>{online=!!s.val();showBadge()});
 function connect(){
  if(!db){badge('Lokal (ohne Sync)');return}
@@ -298,7 +291,7 @@ function apply(v){
  if(M)LV[M.tm==null?'f':M.tm]=M}
 function softRender(){
  if(tab=='match')return;
- const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.id!='tcode')return;
+ const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
  const y=window.scrollY;render();window.scrollTo(0,y)}
 function push(){
  if(!ROOM||first)return;
@@ -324,6 +317,6 @@ function push(){
   for(const t of [...WROTE])if(!(t in LV)&&!(M&&M.tm==t)){u['live/'+t]=null;WROTE.delete(t);delete LAST.live[t]}
   if(Object.keys(u).length)ROOM.update(u).catch(e=>{ERR='Schreibfehler: '+(e.code||e.message);showBadge()})
  }catch(e){ERR='Sync-Fehler: '+e.message;showBadge()}}
-$('#tcode').value=turnierCode;connect();
+connect();
 render();
 </script></body></html>
