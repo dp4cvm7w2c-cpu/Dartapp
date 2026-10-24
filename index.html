@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dart Turnier Manager</title>
 
 <!-- Firebase SDKs (Compat) -->
@@ -15,7 +15,7 @@
   --mut:#94a3b8;--grn:#22c55e;--red:#ef4444;--blu:#3b82f6;--ink:#475569;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);padding:10px;padding-bottom:80px;max-width:800px;margin:0 auto;}
+body{background:var(--bg);color:var(--text);padding:10px;padding-bottom:80px;max-width:900px;margin:0 auto;}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--card-border);}
 h1{font-size:1.2rem;color:var(--grn);}
 .badge{background:var(--card-border);padding:2px 8px;border-radius:12px;font-size:0.75rem;color:var(--mut);}
@@ -32,19 +32,25 @@ nav button{margin:0;padding:8px 4px;font-size:0.75rem;background:transparent;col
 nav button.active{color:var(--grn);font-weight:bold;}
 .msg{background:#1e3a8a;color:#93c5fd;padding:8px;border-radius:6px;font-size:0.85rem;margin-bottom:10px;}
 .player-row{display:flex;gap:8px;align-items:center;margin-top:6px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;}
+.score-box{font-size:2rem;font-weight:bold;text-align:center;background:var(--bg);padding:10px;border-radius:8px;margin:6px 0;color:var(--grn);}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.keypad button{background:var(--ink);margin-top:0;padding:12px;font-size:1.1rem;}
+.stat-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85rem;}
+.stat-table th, .stat-table td{padding:6px;text-align:left;border-bottom:1px solid var(--card-border);}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🎯 Dart Turnier</h1>
+  <h1>🎯 Dart Turnier Manager</h1>
   <span id="room-badge" class="badge">Raum: wird geladen...</span>
 </header>
 
-<!-- IMMER SICHTBAR: Raum-Auswahl ganz oben -->
+<!-- IMMER SICHTBAR: Raum-Auswahl -->
 <div class="card" style="border-color: var(--grn); margin-bottom:10px;">
   <h2 style="font-size:0.9rem; margin-bottom:4px;">🛜 Turnier-Code / Raum</h2>
-  <p class="mut" style="margin-bottom:6px;">Geräte mit demselben Code sind live verbunden.</p>
+  <p class="mut" style="margin-bottom:6px;">Geräte mit demselben Code sind live synchronisiert.</p>
   <div style="display:flex; gap:8px;">
     <input id="tcode" maxlength="20" style="margin-top:0;">
     <button onclick="changeCode()" style="margin-top:0; width:140px;">Verbinden</button>
@@ -57,257 +63,4 @@ nav button.active{color:var(--grn);font-weight:bold;}
   <button id="n-setup" onclick="setTab('setup')">⚙️ Setup</button>
   <button id="n-active" onclick="setTab('active')">🎮 Aktives Turnier</button>
   <button id="n-last" onclick="setTab('last')">🏆 Letztes Turnier</button>
-  <button id="n-stats" onclick="setTab('stats')">📊 Statistiken</button>
-</nav>
-
-<script>
-const $=s=>document.querySelector(s),esc=s=>(s||'').replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
-
-// --- FIREBASE CONFIG ---
-const firebaseConfig = {
-  apiKey: "AIzaSyAfPXMdHOAbiVlMkkP4MZGJAUYaAkW3Iqs",
-  authDomain: "dart-6fe90.firebaseapp.com",
-  databaseURL: "https://dart-6fe90-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "dart-6fe90",
-  storageBucket: "dart-6fe90.firebasestorage.app",
-  messagingSenderId: "341118542776",
-  appId: "1:341118542776:web:ef0c521f0594d1490d654d",
-  measurementId: "G-LJ6RE5SGNF"
-};
-
-try {
-  firebase.initializeApp(firebaseConfig);
-} catch(e) {}
-const db = firebase.database();
-
-let turnierCode = localStorage.getItem('dart-code') || 'abend-' + Math.floor(Math.random() * 9000 + 1000);
-
-let S = { boards: 4, mode: 501, legs: 2, dout: true };
-let R = [
-  { n: 'Anna', on: true },
-  { n: 'Ben', on: true },
-  { n: 'Chris', on: true },
-  { n: 'Dana', on: true }
-];
-let TN = null;       
-let lastTN = null;   
-let ST = {};         
-let tab = 'setup';
-let msg = '';
-
-function stp(k, v) {
-  return `<button class="sec" style="width:40px;padding:8px;" onclick="updParam('${k}',${v-1})">-</button><b style="padding:0 8px;">${v}</b><button class="sec" style="width:40px;padding:8px;" onclick="updParam('${k}',${v+1})">+</button>`;
-}
-
-function updParam(k, v) {
-  if (k === 'b') S.boards = Math.max(1, Math.min(8, v));
-  if (k === 'm') S.mode = v;
-  if (k === 'l') S.legs = Math.max(1, v);
-  sync();
-  render();
-}
-
-function setTab(t) {
-  tab = t;
-  render();
-}
-
-function sync() {
-  try {
-    localStorage.setItem('dart-code', turnierCode);
-    localStorage.setItem('dart-r', JSON.stringify(R));
-  } catch(e) {}
-
-  db.ref('turniere/' + turnierCode).set({ S, TN, lastTN, R, ST });
-}
-
-function listenToFirebase() {
-  db.ref('turniere/' + turnierCode).on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      S = data.S || S;
-      TN = data.TN || TN;
-      lastTN = data.lastTN || lastTN;
-      R = data.R || R;
-      ST = data.ST || ST;
-      render();
-    }
-  });
-}
-
-function render() {
-  if($('#room-badge')) $('#room-badge').innerText = 'Raum: ' + turnierCode;
-  if($('#tcode') && document.activeElement !== $('#tcode')) $('#tcode').value = turnierCode;
-  
-  ['setup', 'active', 'last', 'stats'].forEach(t => {
-    if($('#n-' + t)) $('#n-' + t).className = tab === t ? 'active' : '';
-  });
-  
-  let html = '';
-  if (msg) html += `<div class="msg">${msg}</div>`;
-
-  if (tab === 'setup') {
-    html += `
-    <div class="card">
-      <h2>Turnier einrichten</h2>
-      <div class="row"><span>Scheiben (max. 8)</span>${stp('b', S.boards)}</div>
-      <div class="row"><span>Modus</span>
-        <select onchange="updParam('m', Number(this.value))">
-          <option value="301" ${S.mode===301?'selected':''}>301</option>
-          <option value="501" ${S.mode===501?'selected':''}>501</option>
-        </select>
-      </div>
-      <div class="row"><span>Legs (zum Sieg)</span>${stp('l', S.legs)}</div>
-      <button style="padding:16px;font-size:1.1rem;margin-top:16px;" onclick="startTurnier()">Turnier starten 🚀</button>
-    </div>
-
-    <div class="card">
-      <h2>Spieler verwalten</h2>
-      <div id="player-list">
-        ${R.map((p, i) => `
-          <div class="player-row">
-            <input type="checkbox" ${p.on?'checked':''} onchange="togglePlayer(${i})" style="width:24px;height:24px;">
-            <input type="text" value="${esc(p.n)}" oninput="updatePlayerName(${i}, this.value)" style="margin-top:0;">
-            <button class="sec" style="width:40px;padding:10px;margin-top:0;" onclick="removePlayer(${i})">✕</button>
-          </div>
-        `).join('')}
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <input id="new-player-name" placeholder="Neuer Spieler..." style="margin-top:0;">
-        <button onclick="addPlayer()" style="margin-top:0;width:120px;">Hinzufügen</button>
-      </div>
-    </div>`;
-
-  } else if (tab === 'active') {
-    html += `<div class="card"><h2>Aktives Turnier</h2>`;
-    if (TN && TN.length > 0) {
-      html += `<p class="mut" style="margin-bottom:10px;">Modus: ${S.mode} | Scheiben: ${S.boards}</p>`;
-      html += `<table style="width:100%;font-size:0.9rem;border-collapse:collapse;">
-        <tr style="border-bottom:1px solid var(--card-border);text-align:left;"><th style="padding:6px;">Spieler</th><th style="padding:6px;">Status</th><th style="padding:6px;text-align:right;">Aktion</th></tr>`;
-      TN.forEach((p, i) => {
-        html += `<tr style="border-bottom:1px solid var(--card-border);">
-          <td style="padding:8px;">${esc(p.name)}</td>
-          <td style="padding:8px;">${p.status || 'Im Turnier'}</td>
-          <td style="padding:8px;text-align:right;"><button class="sec" style="padding:4px 8px;font-size:0.8rem;margin-top:0;width:auto;" onclick="finishPlayer(${i})">Sieg/Runde beenden</button></td>
-        </tr>`;
-      });
-      html += `</table>`;
-      html += `<button class="sec" onclick="endTurnier()" style="margin-top:16px;background:var(--red);">Turnier beenden & archivieren</button>`;
-    } else {
-      html += `<p class="mut">Derzeit läuft kein aktives Turnier. Starte eines im Setup-Reiter!</p>`;
-    }
-    html += `</div>`;
-
-  } else if (tab === 'last') {
-    html += `<div class="card"><h2>Letztes Turnier (Statistik & Platzierungen)</h2>`;
-    if (lastTN && lastTN.length > 0) {
-      html += `<table style="width:100%;margin-top:8px;font-size:0.9rem;border-collapse:collapse;">
-        <tr style="border-bottom:1px solid var(--card-border);text-align:left;"><th style="padding:6px;">Rang</th><th style="padding:6px;">Spieler</th><th style="padding:6px;">Ergebnis</th></tr>`;
-      lastTN.forEach((p, i) => {
-        html += `<tr style="border-bottom:1px solid var(--card-border);">
-          <td style="padding:8px;">#${i+1}</td>
-          <td style="padding:8px;">${esc(p.name)}</td>
-          <td style="padding:8px;">${p.status || 'Beendet'}</td>
-        </tr>`;
-      });
-      html += `</table>`;
-    } else {
-      html += `<p class="mut" style="margin-top:8px;">Es ist noch kein archiviertes Turnier vorhanden.</p>`;
-    }
-    html += `</div>`;
-
-  } else if (tab === 'stats') {
-    html += `<div class="card"><h2>Ewige Statistiken</h2><p class="mut">Hier werden zukünftig übergreifende Spieler-Statistiken erfasst.</p></div>`;
-  }
-
-  $('#app').innerHTML = html;
-  msg = '';
-}
-
-function changeCode() {
-  const val = $('#tcode').value.trim();
-  if (val) {
-    turnierCode = val;
-    localStorage.setItem('dart-code', turnierCode);
-    db.ref('turniere/' + turnierCode).once('value', (snap) => {
-      if (snap.exists()) {
-        const data = snap.val();
-        S = data.S || S; TN = data.TN || TN; lastTN = data.lastTN || lastTN; R = data.R || R; ST = data.ST || ST;
-      } else {
-        sync();
-      }
-      listenToFirebase();
-      render();
-      msg = 'Mit Raum "' + turnierCode + '" verbunden!';
-    });
-  }
-}
-
-function addPlayer() {
-  const nameInput = $('#new-player-name');
-  if(!nameInput) return;
-  const name = nameInput.value.trim();
-  if (name) {
-    R.push({ n: name, on: true });
-    nameInput.value = '';
-    sync();
-    render();
-  }
-}
-
-function togglePlayer(i) {
-  R[i].on = !R[i].on;
-  sync();
-}
-
-function updatePlayerName(i, val) {
-  R[i].n = val;
-  sync();
-}
-
-function removePlayer(i) {
-  R.splice(i, 1);
-  sync();
-  render();
-}
-
-function startTurnier() {
-  const activePlayers = R.filter(p => p.on);
-  if (activePlayers.length === 0) {
-    msg = 'Bitte wähle mindestens einen aktiven Spieler aus!';
-    render();
-    return;
-  }
-  if (TN) {
-    lastTN = JSON.parse(JSON.stringify(TN));
-  }
-  TN = activePlayers.map(p => ({ name: p.n, status: 'Aktiv' }));
-  tab = 'active';
-  sync();
-  render();
-}
-
-function finishPlayer(i) {
-  TN[i].status = 'Gewonnen / Abgeschlossen';
-  sync();
-  render();
-}
-
-function endTurnier() {
-  if (TN) {
-    lastTN = JSON.parse(JSON.stringify(TN));
-  }
-  TN = null;
-  tab = 'last';
-  sync();
-  render();
-}
-
-window.onload = function() {
-  listenToFirebase();
-  render();
-};
-</script>
-</body>
-</html>
-
+  <button id="n-stats" onclick="setTab('stats')
