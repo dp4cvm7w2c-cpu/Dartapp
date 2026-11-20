@@ -2,8 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <!-- Firebase SDKs (Compat) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 :root{--bg:#eef0e9;--card:#fff;--ink:#16201a;--mut:#5d6a61;--line:#d5dacf;--red:#b8322b;--grn:#1d6a43;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1712;--card:#18221b;--ink:#eaf0e6;--mut:#93a398;--line:#2a372e;--red:#e0584f;--grn:#3fae7a;--on:#0f1712;color-scheme:dark}}
@@ -11,44 +11,61 @@
 *{box-sizing:inherit}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Barlow,system-ui,sans-serif;padding-bottom:110px}
 h1,h2,.n{font-family:"Barlow Condensed","Arial Narrow",sans-serif}
 h1{margin:0;font-size:30px;font-weight:800}h2{margin:0 0 8px;font-size:21px;font-weight:600}
-header{padding:14px 16px 0}nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px;padding:8px 16px;z-index:100;justify-content:space-around}nav button{flex:1;min-height:36px;padding:6px 2px;font-size:.8rem}.badge{background:var(--line);padding:2px 8px;border-radius:12px;font-size:.75rem;color:var(--mut)}main{padding:0 16px 32px;max-width:560px;margin:0 auto}header,nav{max-width:560px;margin:0 auto}
+header{padding:14px 16px 0}nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;padding:8px 16px;z-index:100;justify-content:space-around}nav button{flex:1;min-height:36px;padding:6px 2px;font-size:.8rem}.badge{background:var(--line);padding:2px 8px;border-radius:12px;font-size:.75rem;color:var(--mut)}main{padding:0 16px 32px;max-width:560px;margin:0 auto}header,nav{max-width:560px;margin:0 auto}
 button,select,textarea,input{font:inherit;color:inherit}
 button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px;cursor:pointer;min-height:44px}
 button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--grn);outline-offset:2px}
 .tab.on,.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .big{width:100%;background:var(--grn);color:var(--on);border:0;font-weight:600;margin-top:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0}
-.st{display:flex;gap:10px;align-items:center}.st b{min-width:20px;text-align:center}
+.row{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.st{display:flex;align-items:center}.st b{min-width:20px;text-align:center}
 textarea,select,input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
 .mut{color:var(--mut);font-size:14px;margin:4px 0}
-.pls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pls{display:grid;grid-template-columns:1fr 1fr;grid-gap:10px;gap:10px;margin-bottom:12px}
 .pl{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center}
 .pl.act{border-color:var(--red)}.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rem{font-size:76px;font-weight:800;line-height:1}.pl.act .rem{color:var(--red)}
 .disp{font-size:44px;text-align:center;font-weight:800;min-height:56px}
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pad button{font-size:22px;min-height:54px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);grid-gap:8px;gap:8px;}.pad button{font-size:22px;min-height:54px}
 .err{color:var(--red);font-weight:600}
-.mods{display:flex;gap:6px;margin-bottom:8px}.mods button{flex:1;padding:8px 4px}
-.pad5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.pad5 button{padding:6px 0;min-height:48px;font-weight:600}.pad5 button:disabled{opacity:.3}
+.mods{display:flex;margin-bottom:8px}.mods button{flex:1;padding:8px 4px}
+.pad5{display:grid;grid-template-columns:repeat(5,1fr);grid-gap:6px;gap:6px;}.pad5 button{padding:6px 0;min-height:48px;font-weight:600}.pad5 button:disabled{opacity:.3}
 .vis{font-size:24px;min-height:34px;text-align:center;font-weight:600}
-.m{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.m button{min-height:36px;padding:4px 14px}
+.m{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.m button{min-height:36px;padding:4px 14px}
 .bd{font-weight:600;color:var(--mut)}input[type=checkbox]{width:26px;height:26px;margin:0;padding:0;accent-color:var(--grn)}summary{font-weight:600;cursor:pointer;min-height:32px}details h2{margin-top:12px}
-.tree{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:6px}.sc2{display:flex;flex-direction:column;gap:5px;min-width:80px}
+.tree{display:flex;align-items:center;overflow-x:auto;padding-bottom:6px}.sc2{display:flex;flex-direction:column;min-width:80px}
 .sb{border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);font-size:13px;line-height:1.2}.sb small,.sc2>small{display:block;color:var(--mut);font-size:12px}
 .cl{font-weight:600;font-size:13px;color:var(--mut)}.ar{color:var(--mut);font-size:22px}
 .win{background:var(--grn);color:var(--on);border-radius:14px;padding:16px;text-align:center;font-size:22px;margin-bottom:12px}
 .sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th:first-child,td:first-child{text-align:left}
+
+.row>*+*{margin-left:8px}
+.st>*+*{margin-left:10px}
+.mods>*+*{margin-left:6px}
+.m>*+*{margin-left:8px}
+.tree>*+*{margin-left:6px}
+.sc2>*+*{margin-top:5px}
+nav button{margin:2px}
+.sbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}.sn{flex:1;font-weight:600;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sv{font-size:56px;font-weight:800;line-height:1;padding:0 8px;white-space:nowrap}
+.m button+button{margin-left:6px}.m{flex-wrap:wrap}.qb{white-space:nowrap}
 </style></head><body>
+<noscript><p style="padding:16px">Bitte JavaScript aktivieren.</p></noscript>
+<script>
+window.onerror=function(m,u,l){var b=document.getElementById('room-badge');if(b)b.textContent='Fehler: '+m+(l?' (Z.'+l+')':'')};
+setTimeout(function(){if(!window.__ok){var d=document.createElement('div');d.style.cssText='padding:16px;background:#b8322b;color:#fff;font:16px sans-serif';d.innerHTML='Die App konnte nicht gestartet werden. Bitte Chrome und \u201EAndroid System WebView\u201C im Play Store aktualisieren oder einen anderen Browser (z. B. Firefox) nutzen.';document.body.insertBefore(d,document.body.firstChild)}},2500);
+</script>
 <header style="display:flex;justify-content:space-between;align-items:center;">
   <h1>Dart-Abend</h1>
   <span id="room-badge" class="badge">Raum: lädt...</span>
 </header>
 <nav id="nav"></nav><main id="v"></main>
 <script>
+const vals=o=>Object.keys(o).map(k=>o[k]),fm=(a,f)=>a.reduce((r,x,i)=>r.concat(f(x,i)),[]);
 const $=s=>document.querySelector(s),esc=s=>s.replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
 let S={boards:8,mode:501,legs:2,dout:true,groups:0,players:[]},M=null,TN=null,LV={},PL={},SV='all',BASE={},RS=false,GU=[],gm='',R=['Anna','Ben','Chris','Dana'].map(n=>({n,on:true})),ST={},hist=[],tab='setup',pick=[0,1],msg='';
+let DR={},tm='',qm='';
 const T={pl:'Spieler',setup:'Turnier',plan:'Aktuelles Turnier',live:'Livesicht',ts:'Tabelle',match:'Match',stats:'Statistik'};
 const mk=()=>({darts:0,points:0,c180:0,hiF:0,hT:0,att:0,hit:0,won:0,wd:0,mp:0,mw:0,lp:0});
 const avg=n=>{const s=ST[n];return s&&s.darts?(s.points/s.darts*3).toFixed(1):'–'};
@@ -67,15 +84,15 @@ try{const x=JSON.parse(localStorage.getItem('dart-r'));if(Array.isArray(x))R=x}c
 function addName(n,g){n=n.trim().slice(0,24);
  if(!n){gm='Bitte einen Namen eingeben.';return}
  if([...R.map(p=>p.n),...GU].some(x=>x.toLowerCase()==n.toLowerCase())){gm='Diesen Namen gibt es schon.';return}
- gm='';g?GU.push(n):R.push({n,on:true});save()}
+ gm='';if(g){GU.push(n);DR.gn=''}else{R.push({n,on:true});DR.nn=''}save()}
 const savePL=()=>{try{localStorage.setItem('dart-pl',JSON.stringify(PL))}catch(e){}};
 try{const x=JSON.parse(localStorage.getItem('dart-pl'));if(x&&typeof x=='object')PL=x}catch(e){}
 try{const x=JSON.parse(localStorage.getItem('dart-st'));if(x&&typeof x=='object')ST=x}catch(e){}
 function places(){
- if(!TN||!TN.ko)return null;const f=TN.ko[TN.ko.length-1][0];
- if(!f.done||(TN.p3&&!TN.p3.done))return null;
+ if(!TN||!TN.ko)return null;const f=(TN.ko[TN.ko.length-1]||[])[0];
+ if(!f||!f.done||(TN.p3&&!TN.p3.done))return null;
  const a=f.w,b=f.w==f.a?f.b:f.a;let c=null;
- if(TN.p3)c=TN.p3.w;else{const all=[...new Set(TN.gm.flatMap(m=>[m.a,m.b]))];if(all.length==3)c=all.find(x=>x!=a&&x!=b)}
+ if(TN.p3)c=TN.p3.w;else{const all=tnAct();if(all.length==3)c=all.find(x=>x!=a&&x!=b)}
  return [a,b,c]}
 function recPl(){const p=places();if(!p||TN.rec||recBusy)return;recBusy=true;
  const go=()=>{TN.rec=1;LAST&&(LAST.tn.rec=1);p.forEach((n,i)=>{if(n){PL[n]=PL[n]||[0,0,0];PL[n][i]++}});savePL()};
@@ -89,17 +106,18 @@ function schema(n){
  for(let m=sz/2,k=0;m>=1;m/=2,k++){const nme=m==1?'Finale':m==2?'Halbfinale':m==4?'Viertelfinale':'Runde '+(k+1);
   cols.push(`<div class="sc2"><div class="cl">${nme}</div>${Array.from({length:Math.min(m,8)},()=>box('Match')).join('')}${m>8?`<small>${m} Matches</small>`:''}${k==0&&sz>n?`<small>${sz-n} Freilose</small>`:''}${m==1&&n>=4?'<div class="cl" style="margin-top:10px">Platz 3</div>'+box('Spiel um Platz 3'):''}</div>`)}
  return `<div class="tree">${cols.join('<div class="ar">›</div>')}</div><p class="mut">Alle ${n} Spieler kommen in die KO-Runde, gesetzt wird Erster gegen Letzten.</p>`}
-function vPlace(){const e=Object.entries(PL).sort((a,b)=>b[1][0]-a[1][0]||b[1][1]-a[1][1]||b[1][2]-a[1][2]);
+function vPlace(){const e=Object.keys(PL).map(k=>[k,PL[k]]).sort((a,b)=>b[1][0]-a[1][0]||b[1][1]-a[1][1]||b[1][2]-a[1][2]);
  if(!e.length)return '';
  return `<div class="card sc"><h2>Platzierungen</h2><table><tr><th>Spieler</th><th>1.</th><th>2.</th><th>3.</th></tr>${e.map(([n,v])=>`<tr><td>${esc(n)}</td><td>${v[0]}</td><td>${v[1]}</td><td>${v[2]}</td></tr>`).join('')}</table></div>`}
 const tavg=n=>{const s=ST[n];if(!s)return 0;const b=BASE[n]||mk(),d=s.darts-b.darts;return d?(s.points-b.points)/d*3:0};
 const bd=id=>{const k=((TN&&TN.sl)||[]).indexOf(id);return k<0?'?':k+1};
-const DN=n=>n==25?'Bull':n,allM=()=>TN?[...TN.gm,...(TN.ko||[]).flat(),...(TN.p3?[TN.p3]:[])]:[],pend=()=>allM().filter(m=>!m.done&&m.a&&m.b);
+const DN=n=>n==25?'Bull':n,allM=()=>TN?[...TN.gm,...fm(TN.ko||[],r=>r),...(TN.p3?[TN.p3]:[])]:[],pend=()=>{const o=arr(TN&&TN.ord);return allM().filter(m=>!m.done&&m.a&&m.b).map((t,i)=>({t,i,r:o.indexOf(t.id)})).sort((x,y)=>(x.r<0?1e9:x.r)-(y.r<0?1e9:y.r)||x.i-y.i).map(z=>z.t)};
 function start(p,tm){
  p.forEach(n=>ST[n]=ST[n]||mk());hist=[];
- M={p,tm:tm==null?null:tm,rem:[S.mode,S.mode],vs:S.mode,legs:[0,0],turn:0,starter:0,last:['–','–'],ld:[0,0],dr:[0,0],pt:[0,0],vd:[],vp:0,mod:'S',over:false}}
+ M={p,tm:tm==null?null:tm,rem:[S.mode,S.mode],vs:S.mode,legs:[0,0],turn:0,starter:0,last:['–','–'],ld:[0,0],dr:[0,0],pt:[0,0],vd:[],vp:0,mod:'S',over:false,tid:TN?TN.id:null,pre:true}}
 function nextVisit(){M.vd=[];M.vp=0;M.mod='S';M.turn=1-M.turn;M.vs=M.rem[M.turn]}
 function dart(n,m){
+ if(M.pre)return;
  M.p.forEach(x=>{ST[x]=ST[x]||mk()});
  const i=M.turn,s=ST[M.p[i]],r=M.rem[i],dbl=m=='D',pts=m=='M'?0:n*(m=='D'?2:m=='T'?3:1);
  snap();
@@ -120,7 +138,7 @@ function result(){
  const t=allM().find(x=>x.id==M.tm);if(!t)return;
  t.la=M.legs[0];t.lb=M.legs[1];t.done=true;
  if(t.ko||t.third){t.w=t.la>t.lb?t.a:t.b;if(t.ko)advance(t)}
- phase();recPl()}
+ phase();sweepWO();recPl()}
 function advance(t){
  const [r,k]=t.id.slice(1).split('_').map(Number),nx=TN.ko[r+1];
  if(TN.p3&&TN.ko[r].length==2&&t.a&&t.b)TN.p3[k%2?'b':'a']=t.w==t.a?t.b:t.a;
@@ -134,24 +152,63 @@ function startTN(){
  P.forEach((p,k)=>G[k%g].push(p));
  const R=G.map(rr),gm=[];let c=0;
  for(let r=0;r<Math.max(...R.map(x=>x.length));r++)R.forEach((x,gi)=>(x[r]||[]).forEach(([a,b])=>gm.push({id:'g'+c++,g:gi,a,b,la:0,lb:0,done:false})));
- Object.values(ST).forEach(s=>s.hT=0);BASE=JSON.parse(JSON.stringify(ST));TN={G,gm,ko:null};LV={};M=null;hist=[];msg='';tab='plan'}
+ vals(ST).forEach(s=>s.hT=0);BASE=JSON.parse(JSON.stringify(ST));TN={id:Date.now().toString(36),G,gm,ko:null};LV={};M=null;hist=[];msg='';tab='plan';try{if(ROOM){ROOM.child('live').remove();WROTE=new Set();LAST.live={}}}catch(e){}}
 function stand(g){
- const r=g.map(n=>({n,p:0,w:0,l:0,d:0}));
- TN.gm.forEach(m=>{if(!m.done||!g.includes(m.a))return;const A=r.find(x=>x.n==m.a),B=r.find(x=>x.n==m.b);A.d+=m.la-m.lb;B.d+=m.lb-m.la;if(m.la>m.lb){A.p+=2;A.w++;B.l++}else{B.p+=2;B.w++;A.l++}});
+ const r=g.filter(n=>tnOut().indexOf(n)<0).map(n=>({n,p:0,w:0,l:0,d:0}));
+ TN.gm.forEach(m=>{if(!m.done||m.void||!g.includes(m.a))return;const A=r.find(x=>x.n==m.a),B=r.find(x=>x.n==m.b);if(!A||!B)return;A.d+=m.la-m.lb;B.d+=m.lb-m.la;if(m.la>m.lb){A.p+=2;A.w++;B.l++}else{B.p+=2;B.w++;A.l++}});
  return r.sort((x,y)=>y.p-x.p||y.d-x.d||(tavg(y.n)-tavg(x.n))||0)}
+const tnAll=()=>TN?fm(TN.G,g=>g):[],tnOut=()=>arr(TN&&TN.out),tnAct=()=>tnAll().filter(n=>tnOut().indexOf(n)<0);
+const koAll=()=>TN?[].concat(fm(TN.ko||[],r=>r),TN.p3?[TN.p3]:[]):[];
+function addTNPlayer(n){
+ if(!TN)return 'Es läuft kein Turnier.';
+ if(TN.ko)return 'Nach Beginn der KO-Runde können keine Spieler mehr hinzukommen.';
+ const out=tnOut();let gi=TN.G.findIndex(g=>g.indexOf(n)>=0);
+ if(gi>=0&&out.indexOf(n)<0)return 'Dieser Spieler ist schon dabei.';
+ if(gi<0){const act=g=>g.filter(x=>out.indexOf(x)<0);gi=0;TN.G.forEach((g,i)=>{if(act(g).length<act(TN.G[gi]).length)gi=i});TN.G[gi].push(n)}
+ else TN.out=out.filter(x=>x!==n);
+ fillGroup(gi);return ''}
+function fillGroup(gi){
+ const out=tnOut(),mem=TN.G[gi].filter(x=>out.indexOf(x)<0);
+ let c=0;TN.gm.forEach(m=>{c=Math.max(c,+m.id.slice(1)+1)});
+ for(let i=0;i<mem.length;i++)for(let j=i+1;j<mem.length;j++){
+  const x=mem[i],y=mem[j];
+  if(!TN.gm.some(m=>!m.void&&((m.a==x&&m.b==y)||(m.a==y&&m.b==x))))TN.gm.push({id:'g'+c++,g:gi,a:x,b:y,la:0,lb:0,done:false})}}
+function removeTNPlayer(n){
+ if(!TN||!n)return '';
+ if(allM().some(t=>!t.done&&(t.a==n||t.b==n)&&LV[t.id]&&!LV[t.id].over))return n+' spielt gerade. Bitte erst das Match beenden.';
+ TN.out=tnOut();if(TN.out.indexOf(n)<0)TN.out.push(n);
+ TN.gm.forEach(m=>{if(!m.void&&(m.a==n||m.b==n)){m.done=true;m.void=1}});
+ phase();sweepWO();return ''}
+function sweepWO(){
+ if(!TN||!TN.ko)return;const out=tnOut();let ch=true,k=0;
+ while(ch&&k++<30){ch=false;koAll().forEach(t=>{
+  if(t.done||!t.a||!t.b)return;const ao=out.indexOf(t.a)>=0,bo=out.indexOf(t.b)>=0;
+  if(ao||bo){t.done=true;t.wo=1;t.w=ao?t.b:t.a;if(t.ko)advance(t);ch=true}})}}
+function playNow(id){
+ const t=TN&&allM().find(x=>x.id==id);if(!t||t.done||!t.a||!t.b)return 'Dieses Match ist nicht verfügbar.';
+ const sl=(TN.sl=arr(TN.sl));if(sl.indexOf(id)>=0)return '';
+ const run=x=>!!(LV[x]&&!LV[x].over),P=pend(),slm=sl.map(x=>x&&P.find(m=>m.id==x)||null);
+ const clash=slm.find(m=>m&&run(m.id)&&(m.a==t.a||m.b==t.a||m.a==t.b||m.b==t.b));
+ if(clash)return [t.a,t.b].find(n=>n==clash.a||n==clash.b)+' spielt gerade auf einer anderen Scheibe.';
+ let k=sl.findIndex(x=>!x);if(k<0)k=sl.findIndex(x=>!run(x));
+ if(k<0)return 'Alle Scheiben sind belegt. Bitte erst ein Match beenden.';
+ const old=sl[k];sl[k]=id;
+ slm.forEach((m,i)=>{if(i!==k&&m&&!run(m.id)&&(m.a==t.a||m.b==t.a||m.a==t.b||m.b==t.b))sl[i]=0});
+ if(old){const W=pend().filter(m=>sl.indexOf(m.id)<0).map(m=>m.id).filter(x=>x!==old);TN.ord=[old].concat(W)}
+ return ''}
 function phase(){
  if(TN.ko||TN.gm.some(m=>!m.done))return;
- const rows=[];TN.G.forEach(g=>stand(g).forEach((r,pos)=>rows.push({n:r.n,pos,p:r.p,d:r.d,a:tavg(r.n)})));
+ const rows=[];TN.G.forEach(g=>stand(g).filter(r=>tnOut().indexOf(r.n)<0).forEach((r,pos)=>rows.push({n:r.n,pos,p:r.p,d:r.d,a:tavg(r.n)})));
  rows.sort((x,y)=>x.pos-y.pos||y.p-x.p||y.d-x.d||y.a-x.a);
  const n=rows.length;let sz=1;while(sz<n)sz*=2;
- let o=[1];while(o.length<sz){const l=o.length*2+1;o=o.flatMap(x=>[x,l-x])}
- const seed=k=>k<=n?rows[k-1].n:null,K=[[]];
+ let o=[1];while(o.length<sz){const l=o.length*2+1;o=fm(o,x=>[x,l-x])}
+ TN.seed=rows.map(r=>r.n);const seed=k=>k<=n?rows[k-1].n:null,K=[[]];
  for(let k=0;k<sz;k+=2)K[0].push({id:'k0_'+k/2,ko:1,a:seed(o[k]),b:seed(o[k+1]),la:0,lb:0,done:false});
  for(let r=1,m=sz/4;m>=1;m/=2,r++)K.push(Array.from({length:m},(_,k)=>({id:'k'+r+'_'+k,ko:1,a:null,b:null,la:0,lb:0,done:false})));
  TN.ko=K;TN.p3=n>=4?{id:'p3',third:1,a:null,b:null,la:0,lb:0,done:false}:null;K[0].forEach(t=>{if(!t.a||!t.b){t.done=true;t.w=t.a||t.b;advance(t)}})}
 const stp=(a,v)=>`<span class="st"><button data-a="${a}" data-v="-1" aria-label="weniger">−</button><b>${v}</b><button data-a="${a}" data-v="1" aria-label="mehr">+</button></span>`;
 function vSetup(){return `<div class="card" style="border-color:var(--grn)"><h2>🛜 Raum / Turnier-Code</h2><p class="mut">Geräte mit demselben Code sind live synchronisiert.</p>
-<div style="display:flex;gap:8px"><input id="tcode" maxlength="20" value="${esc(turnierCode)}" aria-label="Raum-Code" style="margin-bottom:0"><button data-a="changecode" style="width:130px;margin-bottom:0">Verbinden</button></div>
+<div style="display:flex"><input id="tcode" maxlength="20" value="${esc(DR.tcode==null?turnierCode:DR.tcode)}" aria-label="Raum-Code" style="margin-bottom:0;margin-right:8px"><button data-a="changecode" style="width:130px;margin-bottom:0">Verbinden</button></div>
 <p class="mut" id="rstat">${ERR||(online?'Verbunden mit '+esc(turnierCode):'Nicht verbunden')}</p></div>
 <div class="card"><h2>Turnier einrichten</h2>
 <div class="row"><span>Scheiben (max. 8)</span>${stp('b',S.boards)}</div>
@@ -163,57 +220,88 @@ function vSetup(){return `<div class="card" style="border-color:var(--grn)"><h2>
 ${R.map((p,i)=>`<label class="m"><span>${esc(p.n)}</span><input type="checkbox" data-c="${i}" ${p.on?'checked':''} aria-label="${esc(p.n)} spielt mit"></label>`).join('')||'<p class="mut">Lege im Tab Spieler zuerst Spieler an.</p>'}
 <button data-a="all" style="margin-top:8px">Alle an oder aus</button></div>
 <div class="card"><h2>Gäste</h2>${GU.map((g,i)=>`<div class="m"><span>${esc(g)} <span class="bd">Gast</span></span><button data-a="gdel" data-v="${i}">Entfernen</button></div>`).join('')}
-<input id="gn" placeholder="Name des Gasts" maxlength="24" aria-label="Name des Gasts"><button data-a="gadd">Gast hinzufügen</button><p class="err">${gm}</p><p class="mut">Höchstens 64 Spieler.</p></div>
+<input id="gn" placeholder="Name des Gasts" maxlength="24" aria-label="Name des Gasts" value="${esc(DR.gn||'')}" autocomplete="off"><button data-a="gadd">Gast hinzufügen</button><p class="err">${gm}</p><p class="mut">Höchstens 64 Spieler.</p></div>
 <div class="card"><h2>Turnierplan</h2><p id="plan">${plan(S.players.length,S.boards)}</p></div>
 <div class="card"><h2>Turnierbaum</h2>${schema(S.players.length)}</div>
 <p class="err">${msg}</p><button class="big" data-a="tstart">Turnier starten</button>`}
+const scoreBar=m=>`<div class="sbar"><div class="sn">${esc(m.p[0])}</div><div class="n sv">${m.legs[0]} : ${m.legs[1]}</div><div class="sn">${esc(m.p[1])}</div></div><p class="mut" style="text-align:center;margin:0 0 10px">Leg ${m.legs[0]+m.legs[1]+1} · Sieg bei ${S.legs} Leg${S.legs>1?'s':''}${m.pre?' · Ausbullen steht aus':' · Anwurf: '+esc(m.p[m.starter])}</p>`;
+const bullCard=()=>`<div class="card"><h2>Ausbullen</h2><p>Beide werfen einen Pfeil auf das Bull, wer näher dran ist, beginnt. Wer fängt an?</p><div class="mods"><button class="chip" data-a="bull" data-v="0">${esc(M.p[0])}</button><button class="chip" data-a="bull" data-v="1">${esc(M.p[1])}</button></div><button data-a="bull" data-v="r">Zufällig auslosen</button></div>`;
+function bull(v){const i=v=='r'?(Math.random()<.5?0:1):+v;M.starter=i;M.turn=i;M.vs=M.rem[i];M.pre=false}
 function vMatch(){
  if(!M){const o=i=>`<select data-i="${i}" aria-label="Spieler ${i+1}">${S.players.map((p,k)=>`<option value="${k}" ${pick[i]==k?'selected':''}>${esc(p)}</option>`).join('')}</select>`;
   return `<div class="card"><h2>Freies Match</h2><p class="mut">Turnierspiele startest du im Tab Aktuelles Turnier mit „Spielen“.</p>${o(0)}${o(1)}<p class="err">${msg}</p><button class="big" data-a="go">Match starten</button></div>`}
- const pn=M.p.map((n,i)=>`<div class="pl ${M.turn==i&&!M.over?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${M.rem[i]}</div><div class="mut">Legs ${M.legs[i]} · Match-Ø ${M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–'}<br>zuletzt ${M.last[i]}</div></div>`).join('');
+ const pn=M.p.map((n,i)=>`<div class="pl ${M.turn==i&&!M.over&&!M.pre?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${M.rem[i]}</div><div class="mut">Match-Ø ${M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–'}<br>zuletzt ${M.last[i]}</div></div>`).join('');
  let inp;
  if(M.over){const w=M.legs[0]>M.legs[1]?0:1,t=M.tm!=null;inp=`<div class="win">${esc(M.p[w])} gewinnt ${M.legs[0]}:${M.legs[1]}</div><button class="big" data-a="${t?'back':'new'}">${t?'Zurück zum aktuellen Turnier':'Neues Match'}</button>`}
+ else if(M.pre)inp=bullCard();
  else inp=`<div class="card"><div class="mut">${esc(M.p[M.turn])} wirft Pfeil ${M.vd.length+1} von 3</div><div class="n vis">${M.vd.join('   ')||'–'}</div>
 <div class="mods">${[['S','Single'],['D','Doppel'],['T','Triple']].map(([k,t])=>`<button class="chip ${M.mod==k?'on':''}" data-a="mod" data-v="${k}">${t}</button>`).join('')}<button data-a="miss">Miss</button></div>
 <div class="pad5">${Array.from({length:20},(_,k)=>k+1).concat(25).map(n=>`<button data-a="d" data-v="${n}" ${n==25&&M.mod=='T'?'disabled':''}>${M.mod=='S'?'':M.mod}${DN(n)}</button>`).join('')}</div></div>`;
- return `<div class="pls">${pn}</div>${inp}${M.over?'':'<button data-a="undo">Letzten Pfeil zurücknehmen</button>'}<p class="mut">Prototyp: Die Daten liegen nur auf diesem Gerät. Live-Sync auf mehreren Scheiben kommt mit der Datenbank.</p>`}
+ return scoreBar(M)+`<div class="pls">${pn}</div>${inp}${M.over||M.pre?'':'<button data-a="undo">Letzten Pfeil zurücknehmen</button>'}`}
 function vPlan(){
  if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Lege im Tab Turnier die Spieler fest und starte das Turnier. Hier siehst du dann Scheiben, Spielplan, Tabellen und den KO-Baum.</p></div>`;
- const P=pend(),B=S.boards,AC=Array.from({length:B},(_,i)=>{const id=(TN.sl||[])[i];return id?P.find(x=>x.id==id)||null:null}),WT=P.filter(t=>!AC.includes(t)),fin=TN.ko&&TN.ko[TN.ko.length-1][0];
- const nm=t=>`${t.a?esc(t.a):t.done?'Freilos':'offen'} – ${t.b?esc(t.b):t.done?'Freilos':'offen'}`,res=t=>t.done&&t.a&&t.b?` ${t.la}:${t.lb}`:'';
+ const cand=R.map(p=>p.n).concat(GU).filter(n=>tnAct().indexOf(n)<0),P=pend(),B=S.boards,AC=Array.from({length:B},(_,i)=>{const id=(TN.sl||[])[i];return id?P.find(x=>x.id==id)||null:null}),WT=P.filter(t=>!AC.includes(t)),fin=TN.ko&&TN.ko[TN.ko.length-1][0];
+ const nm=t=>`${t.a?esc(t.a):t.done?'Freilos':'offen'} – ${t.b?esc(t.b):t.done?'Freilos':'offen'}`,res=t=>t.wo?' kampflos':t.done&&t.a&&t.b?` ${t.la}:${t.lb}`:'';
  const rn=k=>{if(k>=TN.ko.length)return 'Spiel um Platz 3';const c=TN.ko[k].length;return c==1?'Finale':c==2?'Halbfinale':c==4?'Viertelfinale':'Runde '+(k+1)};
  return `${places()?`<div class="win">Sieger: ${esc(places()[0])}<br><small>2. ${esc(places()[1])}${places()[2]?', 3. '+esc(places()[2]):''}</small></div>`:''}
-<div class="card"><h2>${TN.ko?'KO-Phase':'Gruppenphase'}</h2><p class="mut">${allM().filter(t=>t.done&&t.a&&t.b).length} Matches gespielt, ${P.length} bereit</p>
+<div class="card"><h2>${TN.ko?'KO-Phase':'Gruppenphase'}</h2><p class="mut">${allM().filter(t=>t.done&&t.a&&t.b&&!t.void).length} Matches gespielt, ${P.length} bereit</p>
 ${AC.map((t,i)=>!t?`<div class="m"><span><b>Scheibe ${i+1}</b> <span class="bd">frei</span></span></div>`:`<div class="m"><span><b>Scheibe ${i+1}</b> ${nm(t)}${LV[t.id]&&!LV[t.id].over?' <span class="bd">läuft</span>':''}</span><button data-a="play" data-v="${t.id}">${LV[t.id]?'Fortsetzen':'Spielen'}</button></div>`).join('')}</div>
-${WT.length?`<div class="card"><h2>Als Nächstes</h2>${WT.slice(0,8).map(t=>`<div class="m"><span>${nm(t)}</span></div>`).join('')}</div>`:''}
+${qm?`<p class="err">${qm}</p>`:''}
+${WT.length?`<details class="card" ${WT.length<=12?'open':''}><summary>Offene Spiele (${WT.length})</summary>${WT.map(t=>`<div class="m"><span>${nm(t)}</span><button data-a="play" data-v="${t.id}">Spielen</button></div>`).join('')}<p class="mut">„Spielen“ startet ein Match direkt auf einer freien oder noch nicht begonnenen Scheibe.</p></details>`:''}
+<details class="card"><summary>Teilnehmer verwalten</summary>
+${tnAct().map((n,i)=>`<div class="m"><span>${esc(n)}</span><button data-a="tout" data-v="${i}">Abmelden</button></div>`).join('')}
+${tnOut().length?`<p class="mut">Abgemeldet: ${tnOut().map(esc).join(', ')}</p>`:''}
+${TN.ko?'<p class="mut">In der KO-Runde können keine Spieler mehr hinzukommen. Wer sich abmeldet, dessen Gegner gewinnt kampflos.</p>':`<h2>Spieler hinzufügen</h2><p class="mut">Neue und wieder aufgenommene Spieler spielen in ihrer Gruppe gegen alle anderen.</p>${cand.length?`<select id="tadd">${cand.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select><button data-a="tin">Hinzufügen</button>`:'<p class="mut">Alle angelegten Spieler sind schon dabei.</p>'}<input id="tg" placeholder="Neuer Gast" maxlength="24" value="${esc(DR.tg||'')}" aria-label="Neuer Gast" autocomplete="off" style="margin-top:8px"><button data-a="tgast">Gast hinzufügen</button>`}
+<p class="err">${tm}</p></details>
 ${TN.ko?`<details class="card" open><summary>KO-Baum</summary>${[...TN.ko,...(TN.p3?[[TN.p3]]:[])].map((R,k)=>`<h2>${rn(k)}</h2>${R.map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`:''}
-<details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
-function vPlayers(){return `<div class="card"><h2>Spieler anlegen</h2><input id="nn" placeholder="Name" maxlength="24" aria-label="Name"><button class="big" data-a="padd">Spieler speichern</button><p class="err">${gm}</p></div>
+<details class="card"><summary>Gruppen und Ergebnisse</summary>${TN.G.map((g,gi)=>`<h2>Gruppe ${gi+1}</h2><div class="sc"><table><tr><th>Spieler</th><th>Pkt</th><th>S</th><th>N</th><th>Legs</th></tr>${stand(g).map(r=>`<tr><td>${esc(r.n)}${tnOut().indexOf(r.n)>=0?' (abgemeldet)':''}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td></tr>`).join('')}</table></div>${TN.gm.filter(t=>t.g==gi&&t.done&&!t.void).map(t=>`<div class="m"><span>${nm(t)}</span><span class="bd">${res(t)}</span></div>`).join('')}`).join('')}</details>`}
+function vPlayers(){return `<div class="card"><h2>Spieler anlegen</h2><input id="nn" placeholder="Name" maxlength="24" aria-label="Name" value="${esc(DR.nn||'')}" autocomplete="off"><button class="big" data-a="padd">Spieler speichern</button><p class="err">${gm}</p></div>
 <div class="card"><h2>Alle Spieler (${R.length})</h2>${R.map((p,i)=>`<div class="m"><span>${esc(p.n)}</span><button data-a="pdel" data-v="${i}">Entfernen</button></div>`).join('')||'<p class="mut">Noch keine Spieler.</p>'}<p class="mut">Wer beim Turnier mitspielt, wählst du im Tab Turnier.</p></div>`}
 function vLive(){
- const L=Object.values(LV).filter(m=>!m.over);
+ const L=vals(LV).filter(m=>!m.over);
  if(!L.length)return `<div class="card"><h2>Gerade läuft nichts</h2><p>Sobald ein Match gestartet ist, siehst du hier den Live-Stand aller Scheiben.</p></div>`;
- return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2><div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Legs ${m.legs[i]} · Match-Ø ${m.dr[i]?(m.pt[i]/m.dr[i]*3).toFixed(1):'–'}</div></div>`).join('')}</div><p class="mut">${esc(String(m.p[m.turn]??''))} ist dran, Pfeil ${m.vd.length+1} von 3${m.vd.length?': '+m.vd.join(' '):''}</p></div>`).join('')+'<p class="mut">Mit der Datenbank siehst du alle Scheiben später live auf deinem Handy, auch wenn die Matches auf anderen Geräten laufen.</p>'}
+ return L.map(m=>`<div class="card"><h2>${m.tm!=null?'Scheibe '+bd(m.tm):'Freies Match'}</h2>${scoreBar(m)}<div class="pls">${m.p.map((n,i)=>`<div class="pl ${m.turn==i&&!m.pre?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${m.rem[i]}</div><div class="mut">Match-Ø ${m.dr[i]?(m.pt[i]/m.dr[i]*3).toFixed(1):'–'}</div></div>`).join('')}</div><p class="mut">${m.pre?'Ausbullen läuft':esc(String(m.p[m.turn]==null?'':m.p[m.turn]))+' ist dran, Pfeil '+(m.vd.length+1)+' von 3'+(m.vd.length?': '+m.vd.join(' '):'')}</p></div>`).join('')}
+const koName=k=>{const c=TN.ko[k].length;return c==1?'Finale':c==2?'Halbfinale':c==4?'Viertelfinale':c==8?'Achtelfinale':'Runde '+(k+1)};
+function ranking(){
+ if(!TN||!TN.ko)return null;
+ const ko=TN.ko,f=(ko[ko.length-1]||[])[0];if(!f)return null;
+ const out=tnOut(),seed=arr(TN.seed),sd=n=>{const i=seed.indexOf(n);return i<0?999:i};
+ const elim={};ko.forEach((R,r)=>R.forEach(t=>{if(t.done&&t.a&&t.b&&t.w)elim[t.w==t.a?t.b:t.a]=r}));
+ const list=[],used={},put=(n,txt)=>{if(!n||used[n]||out.indexOf(n)>=0)return;used[n]=1;list.push({n:n,txt:txt})};
+ if(f.done){put(f.w,'Sieger');put(f.w==f.a?f.b:f.a,'Finale verloren')}
+ if(TN.p3&&TN.p3.done){const q=TN.p3;put(q.w,'Spiel um Platz 3 gewonnen');put(q.w==q.a?q.b:q.a,'Spiel um Platz 3 verloren')}
+ const key=n=>elim[n]==null?100:elim[n];
+ tnAct().filter(n=>!used[n]).sort((x,y)=>key(y)-key(x)||sd(x)-sd(y)).forEach(n=>put(n,elim[n]==null?'noch im Turnier':'ausgeschieden im '+koName(elim[n])));
+ const done=!!places();list.forEach((e,i)=>{e.place=done?i+1:null});
+ return {list:list,done:done}}
+function rankHtml(){const r=ranking();if(!r)return '';
+ return `<div class="card sc"><h2>${r.done?'Endplatzierung':'Zwischenstand'}</h2><table><tr><th>Platz</th><th>Spieler</th><th>Ergebnis</th></tr>${r.list.map(e=>`<tr><td>${e.place||'–'}</td><td>${esc(e.n)}</td><td>${esc(e.txt)}</td></tr>`).join('')}</table>${tnOut().length?`<p class="mut">Nicht gewertet (abgemeldet): ${tnOut().map(esc).join(', ')}</p>`:''}${r.done?'':'<p class="mut">Die Plätze stehen fest, sobald Finale und Spiel um Platz 3 gespielt sind.</p>'}</div>`}
+function resHtml(){
+ if(!TN)return '';
+ const f=t=>`<div class="m"><span>${esc(t.a||'offen')} – ${esc(t.b||'offen')}</span><span class="bd">${t.wo?'kampflos':t.done&&t.a&&t.b?t.la+':'+t.lb:t.done?'Freilos':''}</span></div>`;
+ const grp=TN.G.map((g,gi)=>{const ms=TN.gm.filter(t=>t.g==gi&&t.done&&!t.void);return ms.length?`<h2>Gruppe ${gi+1}</h2>${ms.map(f).join('')}`:''}).join('');
+ const ko=TN.ko?TN.ko.map((R,k)=>`<h2>${koName(k)}</h2>${R.map(f).join('')}`).join('')+(TN.p3?`<h2>Spiel um Platz 3</h2>${f(TN.p3)}`:''):'';
+ return `<details class="card" open><summary>Alle Ergebnisse</summary>${grp}${ko}</details>`}
 function vTS(){
  if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Starte im Tab Turnier ein Turnier, dann siehst du hier Tabellen und Statistiken.</p></div>`;
  const av=n=>tavg(n)?tavg(n).toFixed(1):'–';
  const th=g=>`<tr><th>#</th><th>Spieler</th>${g?'<th>Gr.</th>':''}<th>Sp</th><th>S</th><th>N</th><th>Legs</th><th>Pkt</th><th>Ø</th></tr>`;
- const row=(r,i,g)=>`<tr><td>${i+1}</td><td>${esc(r.n)}</td>${g?`<td>${g}</td>`:''}<td>${r.w+r.l}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td><td>${r.p}</td><td>${av(r.n)}</td></tr>`;
+ const row=(r,i,g)=>`<tr><td>${i+1}</td><td>${esc(r.n)}${tnOut().indexOf(r.n)>=0?' (abgemeldet)':''}</td>${g?`<td>${g}</td>`:''}<td>${r.w+r.l}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d>0?'+':''}${r.d}</td><td>${r.p}</td><td>${av(r.n)}</td></tr>`;
  const gr=TN.G.map(g=>stand(g));
- const all=gr.flatMap((s,gi)=>s.map((r,pos)=>({...r,gi,pos}))).sort((x,y)=>x.pos-y.pos||y.p-x.p||y.d-x.d||tavg(y.n)-tavg(x.n));
+ const all=fm(gr,(s,gi)=>s.map((r,pos)=>Object.assign({},r,{gi,pos}))).sort((x,y)=>x.pos-y.pos||y.p-x.p||y.d-x.d||tavg(y.n)-tavg(x.n));
  const pl=places();
  return `${pl?`<div class="win">Sieger: ${esc(pl[0])}<br><small>2. ${esc(pl[1])}${pl[2]?', 3. '+esc(pl[2]):''}</small></div>`:''}
-<h2 style="margin:4px 0 8px">Turnierstatistik</h2>
+${rankHtml()}<h2 style="margin:4px 0 8px">Turnierstatistik</h2>
 ${gr.map((s,gi)=>`<div class="card sc"><h2>Gruppe ${gi+1}</h2><table>${th(false)}${s.map((r,i)=>row(r,i)).join('')}</table></div>`).join('')}
 ${gr.length>1?`<div class="card sc"><h2>Gesamtwertung</h2><table>${th(true)}${all.map((r,i)=>row(r,i,r.gi+1)).join('')}</table><p class="mut">Setzliste fürs KO-Feld: erst Gruppenplatz, dann Punkte, Leg-Differenz und Average.</p></div>`:''}
-<p class="mut">Sp = Spiele, S = Siege, N = Niederlagen, Legs = Leg-Differenz, Pkt = Punkte (2 pro Sieg), Ø = Turnier-Average.</p>
+${resHtml()}<p class="mut">Sp = Spiele, S = Siege, N = Niederlagen, Legs = Leg-Differenz, Pkt = Punkte (2 pro Sieg), Ø = Turnier-Average.</p>
 ${vStats0('tn')}`}
 function vStats(){return vPlace()+vStats0()+`<button data-a="rst">${RS?'Wirklich alle Statistiken löschen?':'Statistiken zurücksetzen'}</button>`}
 function vStats0(mode){
  const tn=(mode||SV)=='tn'&&TN,B=n=>tn&&BASE[n]?BASE[n]:mk();
  const get=n=>{const s=ST[n],b=B(n),d=k=>(s[k]||0)-(b[k]||0);return {darts:d('darts'),points:d('points'),c180:d('c180'),att:d('att'),hit:d('hit'),won:d('won'),wd:d('wd'),mp:d('mp'),mw:d('mw'),lp:d('lp'),hiF:tn?(s.hT||0):s.hiF}};
  const av=n=>{const g=get(n);return g.darts?g.points/g.darts:0};
- const names=Object.keys(ST).filter(n=>get(n).darts>0).sort((a,b)=>av(b)-av(a));
+ const names=Object.keys(ST).filter(n=>get(n).darts>0&&!(tn&&tnOut().indexOf(n)>=0)).sort((a,b)=>av(b)-av(a));
  const tabs=TN&&!mode?`<div class="row"><span class="mut">Zeitraum</span><span>${[['all','Alle Spiele'],['tn','Dieses Turnier']].map(([k,t])=>`<button class="chip ${SV==k?'on':''}" data-a="sv" data-v="${k}">${t}</button>`).join(' ')}</span></div>`:'';
  if(!names.length)return `${tabs}<div class="card"><h2>Noch keine Statistik</h2><p>Starte ein Match und wirf Pfeile, dann erscheinen hier Average, Doppelquote und mehr.</p></div>`;
  const row=n=>{const g=get(n);return `<tr><td>${esc(n)}</td><td>${(av(n)*3).toFixed(1)}</td><td>${g.darts}</td><td>${g.att?Math.round(g.hit/g.att*100)+' %':'–'}</td><td>${g.c180}</td><td>${g.hiF||'–'}</td><td>${g.won?(g.wd/g.won).toFixed(1):'–'}</td><td>${g.mw}/${g.mp}</td><td>${g.won}/${g.lp}</td></tr>`};
@@ -232,7 +320,7 @@ function render(){derive();push();
  $('#nav').innerHTML=Object.keys(T).map(k=>`<button class="tab ${tab==k?'on':''}" data-a="tab" data-v="${k}">${T[k]}</button>`).join('');
  $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,ts:vTS,match:vMatch,stats:vStats}[tab]()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
- if(a=='tab'){tab=v;msg='';gm='';RS=false}
+ if(a=='tab'){tab=v;msg='';gm='';tm='';qm='';RS=false}
  else if(a=='b')S.boards=Math.min(8,Math.max(1,S.boards+ +v));
  else if(a=='lg')S.legs=Math.min(5,Math.max(1,S.legs+ +v));
  else if(a=='gr')S.groups=Math.min(Math.max(1,Math.floor(S.players.length/2)),Math.max(0,S.groups+ +v));
@@ -245,20 +333,28 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  else if(a=='all'){const f=!R.every(p=>p.on);R.forEach(p=>p.on=f);save()}
  else if(a=='go'){if(S.players.length<2||pick[0]==pick[1]||pick.some(i=>i>=S.players.length))msg='Bitte zwei verschiedene Spieler wählen.';else{msg='';start(pick.map(i=>S.players[i]))}}
  else if(a=='tstart')startTN();
- else if(a=='play'){const t=allM().find(x=>x.id==v);if(LV[v]&&!LV[v].over){M=LV[v];hist=[]}else start([t.a,t.b],t.id);tab='match'}
+ else if(a=='play'){const e=playNow(v);if(e)qm=e;else{qm='';const t=allM().find(x=>x.id==v);if(LV[v]&&!LV[v].over&&LV[v].p[0]==t.a&&LV[v].p[1]==t.b){M=LV[v];hist=[]}else start([t.a,t.b],t.id);tab='match'}}
+ else if(a=='bull')bull(v);
+ else if(a=='tout'){const n=tnAct()[+v];if(n&&(typeof confirm!=='function'||confirm(n+' abmelden? Alle Spiele von '+n+' in diesem Turnier werden gelöscht.')))tm=removeTNPlayer(n)}
+ else if(a=='tin'){const n=$('#tadd')&&$('#tadd').value;tm=n?addTNPlayer(n):''}
+ else if(a=='tgast'){const n=$('#tg').value.trim().slice(0,24);
+  if(!n)tm='Bitte einen Namen eingeben.';
+  else if(R.map(p=>p.n).concat(GU,tnAll()).some(x=>x.toLowerCase()==n.toLowerCase()))tm='Diesen Namen gibt es schon.';
+  else{tm=addTNPlayer(n);if(!tm){GU.push(n);DR.tg='';save()}}}
  else if(a=='mod')M.mod=v;
  else if(a=='d'){dart(+v,M.mod);M.mod='S'}
  else if(a=='miss'){dart(0,'M');M.mod='S'}
  else if(a=='undo'){if(hist.length){const s=JSON.parse(hist.pop());M=s.M;ST=s.ST;TN=s.TN;PL=s.PL;savePL()}}
  else if(a=='new'){delete LV.f;M=null}
  else if(a=='sv')SV=v;
- else if(a=='changecode'){turnierCode=normCode($('#tcode').value)||turnierCode;$('#tcode').value=turnierCode;save();connect()}
+ else if(a=='changecode'){turnierCode=normCode($('#tcode').value)||turnierCode;$('#tcode').value=turnierCode;DR.tcode=null;save();connect()}
  else if(a=='rst'){if(RS){ST={};PL={};BASE={};savePL();if(M)M.p.forEach(n=>ST[n]=mk());RS=false}else RS=true}
  else if(a=='back'){delete LV[M.tm];M=null;tab='plan'}
  render()});
 
 document.addEventListener('change',e=>{const d=e.target.dataset;if(d.i!=null)pick[+d.i]=+e.target.value;if(d.c!=null){R[+d.c].on=e.target.checked;save();render()}});
 document.addEventListener('keydown',e=>{const B={nn:'padd',gn:'gadd',tcode:'changecode'}[e.target.id];if(e.key=='Enter'&&B){e.preventDefault();$('[data-a='+B+']').click()}});
+document.addEventListener('input',e=>{if(e.target.id)DR[e.target.id]=e.target.value});
 // ---- Firebase: Raum-Sync ----
 window.addEventListener('error',e=>{const b=document.getElementById('room-badge');if(b)b.textContent='Fehler: '+(e.message||'?')+(e.lineno?' (Z.'+e.lineno+')':'')});
 const firebaseConfig={apiKey:"AIzaSyAfPXMdHOAbiVlMkkP4MZGJAUYaAkW3Iqs",authDomain:"dart-6fe90.firebaseapp.com",databaseURL:"https://dart-6fe90-default-rtdb.europe-west1.firebasedatabase.app",projectId:"dart-6fe90",storageBucket:"dart-6fe90.firebasestorage.app",messagingSenderId:"341118542776",appId:"1:341118542776:web:ef0c521f0594d1490d654d"};
@@ -272,10 +368,11 @@ const arr=x=>x?(Array.isArray(x)?x:Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]))
 const clone=o=>JSON.parse(JSON.stringify(o===undefined?null:o));
 function flat(o,p,out){out=out||{};if(o!==null&&o!==undefined&&typeof o=='object'){for(const k in o)flat(o[k],p?p+'/'+k:k,out)}else if(o!==null&&o!==undefined)out[p]=o;return out}
 const cfgObj=()=>({S:{boards:S.boards,mode:S.mode,legs:S.legs,dout:S.dout,groups:S.groups},R:R.map(p=>({n:p.n,on:!!p.on})),GU});
-const fixM=m=>({...m,p:arr(m.p),rem:arr(m.rem),legs:arr(m.legs),last:arr(m.last),ld:arr(m.ld),dr:arr(m.dr),pt:arr(m.pt),vd:arr(m.vd),tm:m.tm==null?null:m.tm,over:!!m.over,vp:m.vp||0,mod:m.mod||'S'});
-function fixTN(t){const m=x=>({...x,la:x.la||0,lb:x.lb||0,done:!!x.done});
- const r={G:arr(t.G).map(arr),gm:arr(t.gm).map(m),ko:t.ko?arr(t.ko).map(R=>arr(R).map(m)):null,p3:t.p3?m(t.p3):null};if(t.rec)r.rec=t.rec;if(t.sl)r.sl=arr(t.sl);return r}
-let ROOM=null,LAST,WROTE=new Set(),first=true,online=false,ERR='',recBusy=false,joined=null;
+const fixM=m=>Object.assign({},m,{p:arr(m.p),rem:arr(m.rem),legs:arr(m.legs),last:arr(m.last),ld:arr(m.ld),dr:arr(m.dr),pt:arr(m.pt),vd:arr(m.vd),tm:m.tm==null?null:m.tm,over:!!m.over,pre:!!m.pre,vp:m.vp||0,mod:m.mod||'S'});
+const koOk=k=>k&&k.length?k:null;
+function fixTN(t){const m=x=>Object.assign({},x,{la:x.la||0,lb:x.lb||0,done:!!x.done});
+ const r={G:arr(t.G).map(arr),gm:arr(t.gm).filter(x=>x&&x.id).map(m),ko:koOk(t.ko?arr(t.ko).map(R=>arr(R).filter(x=>x&&x.id).map(m)):null),p3:t.p3?m(t.p3):null};if(t.rec)r.rec=t.rec;if(t.sl)r.sl=arr(t.sl);if(t.id)r.id=t.id;if(t.seed)r.seed=arr(t.seed);if(t.out)r.out=arr(t.out);if(t.ord)r.ord=arr(t.ord);return r}
+let ROOM=null,LAST,WROTE=new Set(),first=true,online=false,ERR='',recBusy=false,joined=null,lastTid;
 const fresh=()=>({tn:{},st:{},pl:{},cfg:'',base:'',live:{}});
 const badge=t=>{const b=$('#room-badge');if(b)b.textContent=t};
 const showBadge=()=>{badge(ERR||(online?'Raum: '+turnierCode+' ✓':'offline'));const r=document.getElementById('rstat');if(r)r.textContent=ERR||(online?'Verbunden mit '+turnierCode:'Nicht verbunden')};
@@ -301,11 +398,12 @@ function apply(v){
  if(v.pl){PL={};for(const k in v.pl){const a=v.pl[k];PL[decK(k)]=[0,1,2].map(i=>(a&&a[i])||0)}LAST.pl=clone(PL)}
  if(v.base){BASE={};for(const k in v.base)BASE[decK(k)]=Object.assign(mk(),v.base[k]);LAST.base=JSON.stringify(BASE)}
  const lv=v.live||{},mine=M&&M.tm!=null?String(M.tm):null;
- LV={};for(const k in lv)if(k!==mine&&lv[k]&&arr(lv[k].p).length==2)LV[k]=fixM(lv[k]);
+ const tid=TN?TN.id:null;if(tid!==lastTid){lastTid=tid;if(M&&M.tm!=null){M=null;hist=[]}}
+ LV={};for(const k in lv)if(k!==(M&&M.tm!=null?String(M.tm):null)&&lv[k]&&arr(lv[k].p).length==2&&lv[k].tid===tid)LV[k]=fixM(lv[k]);
  if(M)LV[M.tm==null?'f':M.tm]=M;
- if(TN){phase();recPl()}}
+ if(TN){phase();sweepWO();recPl()}}
 function softRender(){
- if(tab=='match')return;
+ if(tab=='match'||(DR.gn||DR.nn||DR.tg||'').length)return;
  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
  const y=window.scrollY;render();window.scrollTo(0,y)}
 function push(){
@@ -334,4 +432,5 @@ function push(){
  }catch(e){ERR='Sync-Fehler: '+e.message;showBadge()}}
 connect();
 render();
+window.__ok=1;
 </script></body></html>
