@@ -50,6 +50,13 @@ th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);whit
 nav button{margin:2px}
 .sbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}.sn{flex:1;font-weight:600;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sv{font-size:56px;font-weight:800;line-height:1;padding:0 8px;white-space:nowrap}
 .m button+button{margin-left:6px}.m{flex-wrap:wrap}.qb{white-space:nowrap}
+.mtop{display:flex;justify-content:space-between;align-items:center;margin:2px 0 6px}.mtop button{min-height:34px;padding:2px 10px;font-size:14px}.mtop span{font-size:12px;color:var(--mut);text-align:right}
+.sb2{display:flex;align-items:stretch;margin-bottom:6px}.pn{flex:1;min-width:0;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:3px 4px;text-align:center}.pn.act{border-color:var(--red)}
+.pn .nm{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pn .r{font-size:44px;font-weight:800;line-height:1.05}.pn.act .r{color:var(--red)}.pn .sm{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mid{width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center}.mid b{font-size:24px;font-weight:800;line-height:1}.mid small{font-size:10px;color:var(--mut)}
+.vl{font-size:15px;text-align:center;min-height:22px;margin:0 0 5px;font-weight:600}
+.pd{display:grid;grid-template-columns:repeat(5,1fr);grid-gap:5px;gap:5px}.pd button{height:44px;min-height:0;padding:0;font-weight:700;font-size:17px;height:clamp(38px,8.5vh,56px)}.pd button.w2{grid-column:span 2}.pd button:disabled{opacity:.3}
+body.pm header,body.pm nav{display:none!important}body.pm{padding-bottom:8px}body.pm .mods{margin-bottom:5px}body.pm .mods button{min-height:38px;padding:4px}
 </style></head><body>
 <noscript><p style="padding:16px">Bitte JavaScript aktivieren.</p></noscript>
 <script>
@@ -230,14 +237,19 @@ function bull(v){const i=v=='r'?(Math.random()<.5?0:1):+v;M.starter=i;M.turn=i;M
 function vMatch(){
  if(!M){const o=i=>`<select data-i="${i}" aria-label="Spieler ${i+1}">${S.players.map((p,k)=>`<option value="${k}" ${pick[i]==k?'selected':''}>${esc(p)}</option>`).join('')}</select>`;
   return `<div class="card"><h2>Freies Match</h2><p class="mut">Turnierspiele startest du im Tab Aktuelles Turnier mit „Spielen“.</p>${o(0)}${o(1)}<p class="err">${msg}</p><button class="big" data-a="go">Match starten</button></div>`}
- const pn=M.p.map((n,i)=>`<div class="pl ${M.turn==i&&!M.over&&!M.pre?'act':''}"><div class="nm">${esc(n)}</div><div class="n rem">${M.rem[i]}</div><div class="mut">Match-Ø ${M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–'}<br>zuletzt ${M.last[i]}</div></div>`).join('');
+ const nm=i=>esc(M.p[i]),act=i=>M.turn==i&&!M.over&&!M.pre?' act':'';
+ const av=i=>M.dr[i]?(M.pt[i]/M.dr[i]*3).toFixed(1):'–';
+ const panel=i=>`<div class="pn${act(i)}"><div class="nm">${nm(i)}</div><div class="n r">${M.rem[i]}</div><div class="sm">Ø ${av(i)} · zuletzt ${M.last[i]}</div></div>`;
+ const top=`<div class="mtop"><button data-a="tab" data-v="plan">◀ Turnier</button><span>Leg ${M.legs[0]+M.legs[1]+1} · Sieg bei ${S.legs}${M.pre?'':' · Anwurf '+esc(M.p[M.starter])}</span></div>`;
+ const board=`<div class="sb2">${panel(0)}<div class="mid"><b class="n">${M.legs[0]}:${M.legs[1]}</b><small>Legs</small></div>${panel(1)}</div>`;
  let inp;
  if(M.over){const w=M.legs[0]>M.legs[1]?0:1,t=M.tm!=null;inp=`<div class="win">${esc(M.p[w])} gewinnt ${M.legs[0]}:${M.legs[1]}</div><button class="big" data-a="${t?'back':'new'}">${t?'Zurück zum aktuellen Turnier':'Neues Match'}</button>`}
  else if(M.pre)inp=bullCard();
- else inp=`<div class="card"><div class="mut">${esc(M.p[M.turn])} wirft Pfeil ${M.vd.length+1} von 3</div><div class="n vis">${M.vd.join('   ')||'–'}</div>
-<div class="mods">${[['S','Single'],['D','Doppel'],['T','Triple']].map(([k,t])=>`<button class="chip ${M.mod==k?'on':''}" data-a="mod" data-v="${k}">${t}</button>`).join('')}<button data-a="miss">Miss</button></div>
-<div class="pad5">${Array.from({length:20},(_,k)=>k+1).concat(25).map(n=>`<button data-a="d" data-v="${n}" ${n==25&&M.mod=='T'?'disabled':''}>${M.mod=='S'?'':M.mod}${DN(n)}</button>`).join('')}</div></div>`;
- return scoreBar(M)+`<div class="pls">${pn}</div>${inp}${M.over||M.pre?'':'<button data-a="undo">Letzten Pfeil zurücknehmen</button>'}`}
+ else{const pre=M.mod=='S'?'':M.mod;
+  inp=`<div class="vl">${nm(M.turn)} · Pfeil ${M.vd.length+1}/3: ${M.vd.join('  ')||'–'}</div>
+<div class="mods">${[['S','Single'],['D','Doppel'],['T','Triple']].map(([k,t])=>`<button class="chip ${M.mod==k?'on':''}" data-a="mod" data-v="${k}">${t}</button>`).join('')}</div>
+<div class="pd">${Array.from({length:20},(_,k)=>k+1).map(n=>`<button data-a="d" data-v="${n}">${pre}${n}</button>`).join('')}<button data-a="d" data-v="25" ${M.mod=='T'?'disabled':''}>${pre}Bull</button><button class="w2" data-a="miss">Miss</button><button class="w2" data-a="undo">↶ Zurück</button></div>`}
+ return top+board+inp}
 function vPlan(){
  if(!TN)return `<div class="card"><h2>Noch kein Turnier</h2><p>Lege im Tab Turnier die Spieler fest und starte das Turnier. Hier siehst du dann Scheiben, Spielplan, Tabellen und den KO-Baum.</p></div>`;
  const cand=R.map(p=>p.n).concat(GU).filter(n=>tnAct().indexOf(n)<0),P=pend(),B=S.boards,AC=Array.from({length:B},(_,i)=>{const id=(TN.sl||[])[i];return id?P.find(x=>x.id==id)||null:null}),WT=P.filter(t=>!AC.includes(t)),fin=TN.ko&&TN.ko[TN.ko.length-1][0];
@@ -316,7 +328,7 @@ function assign(){
   const t=P.find(x=>!used.has(x.id)&&!busy.has(x.a)&&!busy.has(x.b));
   sl[i]=t?t.id:0;if(t){used.add(t.id);busy.add(t.a);busy.add(t.b)}}}
 function derive(){assign();S.players=[...R.filter(p=>p.on).map(p=>p.n),...GU].slice(0,64);if(M)LV[M.tm==null?'f':M.tm]=M;try{localStorage.setItem('dart-st',JSON.stringify(ST))}catch(e){}}
-function render(){derive();push();
+function render(){derive();push();if(document.body)document.body.className=(tab=='match'&&M&&!M.over)?'pm':'';
  $('#nav').innerHTML=Object.keys(T).map(k=>`<button class="tab ${tab==k?'on':''}" data-a="tab" data-v="${k}">${T[k]}</button>`).join('');
  $('#v').innerHTML={pl:vPlayers,setup:vSetup,plan:vPlan,live:vLive,ts:vTS,match:vMatch,stats:vStats}[tab]()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
